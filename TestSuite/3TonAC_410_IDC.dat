@@ -1,0 +1,90 @@
+Fin-Tube Coil
+********************************** Geometry **********************************
+SI Units Flag,                                                False
+Fin Type,                                                     2
+Fin Name,                                                     Wavy
+Fin Pitch [FPI],                                              12
+Fin Conductivity [Btu.in/h.ft².F],                            1539
+Fin Thickness [thou],                                         4.5
+Fin Material,                                                 Aluminum
+Tube Type,                                                    6
+Tube Name,                                                    Coil Tube: 3/8 0.012 thick Expanded
+Tube OD [in],                                                 0.394
+Tube ID [in],                                                 0.37
+Tube Conductivity [Btu.in/h.ft².F],                           2724
+Tube Vertical Spacing [in],                                   1
+Tube Horizontal Spacing [in],                                 0.866
+Number of Rows,                                               3
+Number of Tubes per Row,                                      40
+Single Tube Length [in],                                      17.5
+Number of Segments,                                           1
+Number of Circuits,                                           6
+Tube Shift Flag,                                              False
+********************************* Circuiting *********************************
+Branch#,#Tubes
+1,20
+2,20
+3,20
+4,20
+5,20
+6,20
+Branch#,Tube sequence...
+1,81,82,83,84,85,86,87,88,89,90,11,12,13,14,15,16,17,18,19,20
+2,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60
+3,1,2,3,4,5,6,7,8,9,10,91,92,93,94,95,96,97,98,99,100
+4,120,119,118,117,116,115,114,113,112,111,30,29,28,27,26,25,24,23,22,21
+5,80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61
+6,40,39,38,37,36,35,34,33,32,31,110,109,108,107,106,105,104,103,102,101
+******************************* Velocity Profile *****************************
+Tube#,Velocity deviation from mean value
+1,1
+2,1
+3,1
+4,1
+5,1
+6,1
+7,1
+8,1
+9,1
+10,1
+11,1
+12,1
+13,1
+14,1
+15,1
+16,1
+17,1
+18,1
+19,1
+20,1
+21,1
+22,1
+23,1
+24,1
+25,1
+26,1
+27,1
+28,1
+29,1
+30,1
+31,1
+32,1
+33,1
+34,1
+35,1
+36,1
+37,1
+38,1
+39,1
+40,1
+Coefficients,V=C0+C1*H+C2*H^2+C3*H^3
+Segment#,C0,C1,C2,C3
+1,1,0,0,0
+************************** Velocity Profile Raw Data *************************
+Segment#,No. of Data
+1,6
+Segment#,Coil height data
+1,0,0.2,0.4,0.6,0.8,1
+Segment#,Velocity data
+1,1,1,1,1,1,1
+********************************** End of File *******************************

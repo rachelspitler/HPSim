@@ -1,0 +1,4666 @@
+!IDD_Version 0.1.0.0
+
+\group OverallSimData
+
+Model,
+	\unique-object
+    A1; \field Model Name (probably for reporting only...)
+	\type alpha
+
+MainDesignData,
+	\unique-object
+	\required-object
+	\memo The general main design data for the simulation, including
+	\memo design temperatures and refrigerant.
+    A1, \field SI Units Flag
+	\note If false, units are IP
+	\type choice
+	\key False
+	\key True
+	\default True
+    N1, \field Calculation Mode
+	\type integer
+	\required-field
+    N2, \field System Type
+	\type integer
+	\required-field
+    A2, \field Is in Cooling Mode
+	\note If False, cooling mode is off
+	\note If True, cooling mode is on
+	\type choice
+	\key False
+	\key True
+	\default True
+    N3, \field Design Subcooling
+	\type real
+	\units R
+	\required-field
+    N4, \field Design Superheat
+	\type real
+	\units R
+	\required-field
+    A3, \field Refrigerant Name
+	\type choice
+	\key R410a
+	\key R22
+	\key R417a
+	\key 407c
+	\key R134a
+	\required-field
+    N5, \field No. of Refrigerants in Blend
+	\type integer
+	\required-field
+    A4, \field Design Condition Description
+	\type alpha
+	\deprecated
+    N6, \field Outdoor Entering Drybulb Temperature
+	\type real
+	\units F
+	\required-field
+    N7, \field Outdoor Entering Wetbulb Temperature
+	\type real
+	\units F
+    N8, \field Indoor Entering Drybulb Temperature
+	\type real
+	\units F
+	\required-field
+    N9, \field Indoor Entering Wetbulb Temperature
+	\type real
+	\units F
+	\required-field
+    N10; \field Design Refrigerant Charge Mass
+	 \type real
+	 \units lb
+	 \required-field
+
+CompressorData,
+	\unique-object
+	\required-object
+	\memo Data on the compressor, including unit identification,
+	\memo refrigerant, design temperatures, and modeling coefficients.
+    A1, \field Compressor Model
+	\type alpha
+	\deprecated
+    A2, \field Compressor Manufacturer
+	\type choice
+	\key Copeland
+	\key Bristol
+	\key Danfoss
+	\key Panasonic
+	\default Bristol
+    A3, \field Compressor Type
+	\type alpha
+	\deprecated
+    A4, \field Compressor Refrigerant
+	\type choice
+	\key R410a
+	\key R22
+	\key R417a
+	\key 407c
+	\key R134a
+	\required-field
+    N1, \field Compressor Power
+	\type real
+	\units W
+	\deprecated
+    N2, \field Compressor Heat Loss Fraction
+	\note Must be a decimal, not a percentage
+	\type real
+	\minimum 0
+	\maximum 1
+	\required-field
+    N3, \field Compressor Heat Loss
+	\type real
+	\units Btu/h
+	\required-field
+    N4, \field Compressor Volume
+	\type real
+	\units in3
+	\note Cubic inches is not an Energy+
+	\note standard unit.
+	\required-field
+    N5, \field Compressor Mass Coefficient 1
+	\type real
+	\required-field
+    N6, \field Compressor Mass Coefficient 2
+	\type real
+	\required-field
+    N7, \field Compressor Mass Coefficient 3
+	\type real
+	\required-field
+    N8, \field Compressor Mass Coefficient 4
+	\type real
+	\required-field
+    N9, \field Compressor Mass Coefficient 5
+	\type real
+	\required-field
+    N10, \field Compressor Mass Coefficient 6
+	 \type real
+	 \required-field
+    N11, \field Compressor Mass Coefficient 7
+	 \type real
+	 \required-field
+    N12, \field Compressor Mass Coefficient 8
+	 \type real
+	 \required-field
+    N13, \field Compressor Mass Coefficient 9
+	 \type real
+	 \required-field
+    N14, \field Compressor Mass Coefficient 10
+	 \type real
+	 \required-field
+    N15, \field Compressor Power Coefficient 1
+	 \type real
+	 \required-field
+    N16, \field Compressor Power Coefficient 2
+	 \type real
+	 \required-field
+    N17, \field Compressor Power Coefficient 3
+	 \type real
+	 \required-field
+    N18, \field Compressor Power Coefficient 4
+	 \type real
+	 \required-field
+    N19, \field Compressor Power Coefficient 5
+	 \type real
+	 \required-field
+    N20, \field Compressor Power Coefficient 6
+	 \type real
+	 \required-field
+    N21, \field Compressor Power Coefficient 7
+	 \type real
+	 \required-field
+    N22, \field Compressor Power Coefficient 8
+	 \type real
+	 \required-field
+    N23, \field Compressor Power Coefficient 9
+	 \type real
+	 \required-field
+    N24, \field Compressor Power Coefficient 10
+	 \type real
+	 \required-field
+    A5, \field Compressor Coefficients Unit Flag
+	\note Choice between SI or IP units
+	\type choice
+	\key SI
+	\key IP
+	\default SI
+	\deprecated
+    N25, \field Power Multiplier
+	 \type real
+	 \required-field
+    N26, \field Mass Flow Rate Multiplier
+	 \type real
+	 \required-field
+    N27, \field User Specified Rating Evap. Temperature
+	 \type real
+	 \units F
+	 \required-field
+    N28, \field User Specified Rating Cond. Temperature
+	 \type real
+	 \units F
+	 \required-field
+    N29, \field User Specified Rating Subcooling
+	 \type real
+	 \units R
+	 \required-field
+    N30; \field User Specified Rating Superheat
+	 \type real
+	 \units R
+	 \required-field
+ 
+OutdoorCoilData,
+	\unique-object
+	\required-object
+	\memo Data on the outdoor coil including fin and tube properties,
+	\memo and pressure drop and heat transfer multipliers.
+    N1, \field Fin Type
+	\type integer
+	\required-field
+    A1, \field Fin Name
+	\type alpha
+	\deprecated
+    N2, \field Fin Pitch [FPI]
+	\type real
+	\required-field
+    N3, \field Fin Conductivity
+	\type real
+	\units Btu-in/h-ft2-F
+	\required-field
+    N4, \field Fin thickness
+	\type real
+	\units in/1000
+	\note Assuming [thou] = thousandths of an inch
+	\required-field
+    A2, \field Fin Material
+	\type alpha
+	\deprecated
+    A3, \field Tube Name
+	\type alpha
+	\deprecated
+    N5, \field Tube Type
+	\type integer
+	\required-field
+    N6, \field Tube ID
+	\type real
+	\ip-units in
+	\required-field
+    N7, \field Tube OD
+	\type real
+	\ip-units in
+	\required-field
+    N8, \field Tube Conductivity
+	\type real
+	\units Btu-in/h-ft2-F
+	\required-field
+    N9, \field Tube Lateral Spacing
+	\type real
+	\ip-units in
+	\required-field
+    N10, \field Tube Vertical Spacing
+	 \type real
+	 \ip-units in
+	 \required-field
+    N11, \field Number of Rows
+	 \type integer
+	 \required-field
+    N12, \field Number of Tubes Per Row
+	 \type integer
+	 \required-field
+    N13, \field Number of Circuits
+	 \type integer
+	 \required-field
+    N14, \field Number of Segments
+	 \type integer
+	 \required-field
+    N15, \field Single Tube Length
+	 \type real
+	 \ip-units in
+	 \required-field
+    N16, \field Ref Side Heat Transfer Multiplier
+	 \type real
+	 \required-field
+    N17, \field Ref Side Pressure Drop Multiplier
+	 \type real
+	 \required-field
+    N18, \field Air Side Heat Transfer Multiplier
+	 \type real
+	 \required-field
+    N19; \field Air Side Pressure Drop Multiplier
+	 \type real
+	 \required-field
+
+OutdoorFanData,
+	\unique-object
+	\required-object
+	\memo Outdoor fan data: Power, flow, and fan type.
+    N1, \field Fan Power
+	\type real
+	\units W
+	\required-field
+    N2, \field Fan Air Flow Rate
+	\type real
+	\units ft3/min
+	\required-field
+    N3; \field Draw Through (1) or Blow Through (2)
+	\type integer
+	\minimum 1
+	\maximum 2
+	\note 1=Draw Through, 2=Blow Through
+	\required-field
+
+IndoorCoilData,
+	\unique-object
+	\required-object
+	\memo Data on the indoor coil including fin and tube properties,
+	\memo and pressure drop and heat transfer multipliers.
+    N1, \field Fin Type
+	\type integer
+	\required-field
+    A1, \field Fin Name
+	\type alpha
+	\deprecated
+    N2, \field Fin Pitch [FPI]
+	\type real
+	\required-field
+    N3, \field Fin Conductivity
+	\type real
+	\units Btu-in/h-ft2-F
+	\required-field
+    N4, \field Fin Thickness
+	\type real
+	\units in/1000
+	\note Assuming [thou] = thousandths of an inch
+	\required-field
+    A2, \field Fin Material
+	\type alpha
+	\deprecating
+    A3, \field Tube Name
+	\type alpha
+	\deprecating
+    N5, \field Tube Type
+	\type integer
+	\required-field
+    N6, \field Tube ID
+	\type real
+	\ip-units in
+	\required-field
+    N7, \field Tube OD
+	\type real
+	\ip-units in
+	\required-field
+    N8, \field Tube Conductivity
+	\type real
+	\units Btu-in/h-ft2-F
+	\required-field
+    N9, \field Tube Lateral Spacing
+	\type real
+	\ip-units in
+	\required-field
+    N10, \field Tube Vertical Spacing
+	 \type real
+	 \ip-units in
+	 \required-field
+    N11, \field Number of Rows
+	 \type integer
+	 \required-field
+    N12, \field Number of Tubes Per Row
+	 \type integer
+	 \required-field
+    N13, \field Number of Circuits
+	 \type integer
+	 \required-field
+    N14, \field Number of Segments
+	 \type integer
+	 \required-field
+    N15, \field Single Tube Length
+	 \type real
+	 \ip-units in
+	 \required-field
+    N16, \field Ref Side Heat Transfer Multiplier
+	 \type real
+	 \required-field
+    N17, \field Ref Side Pressure Drop Multiplier
+	 \type real
+	 \required-field
+    N18, \field Air Side Heat Transfer Multiplier
+	 \type real
+	 \required-field
+    N19; \field Air Side Pressure Drop Multiplier
+	 \type real
+	 \required-field
+
+IndoorFanData,
+	\unique-object
+	\required-object
+	\memo Data on the indoor fan: power, flow, and fan type.
+    N1, \field Fan Power
+	\type real
+	\units W
+	\required-field
+    N2, \field Fan Air Flow Rate
+	\type real
+	\units ft3/min
+	\required-field
+    N3; \field Draw Through (1) or Blow Through (2)
+	\type integer
+	\minimum 1
+	\maximum 2
+	\note 1=Draw Through, 2=Blow Through
+	\required-field
+
+ExpansionDeviceData,
+	\unique-object
+	\required-object
+	\memo Expansion Device physical dimensions for both heating and cooling.
+	\memo Although none of the following values are listed as required, all
+	\memo the values in an Expansion Device type are required (i.e. if a TXV
+	\memo is used, all the values denoted under TXV must be given).
+    A1, \field Expansion Device Type (Cooling)
+	\type choice
+	\key Capillary Tube
+	\key TXV
+	\key Short Tube Orifice
+	\default Short Tube Orifice
+    A2, \field Expansion Device Type (Heating)
+	\type choice
+	\key Capillary Tube
+	\key TXV
+	\key Short Tube Orifice
+	\default Short Tube Orifice
+    !--- Short Tube Orifice ---
+    N1, \field Short Tube Length (Cooling)
+	\type real
+	\ip-units in
+    N2, \field Short Tube Diameter (Cooling)
+	\type real
+	\ip-units in
+    N3, \field Short Tube Chamfer Depth (Cooling)
+	\type real
+	\ip-units in
+    N4, \field Short Tube Length (Heating)
+	\type real
+	\ip-units in
+    N5, \field Short Tube Diameter (Heating)
+	\type real
+	\ip-units in
+    N6, \field Short Tube Chamfer Depth (Heating)
+	\type real
+	\ip-units in
+    !--- Capillary Tube---
+    N7, \field Capillary Tube Length (Cooling)
+	\type real
+	\ip-units in
+    N8, \field Capillary Tube Diameter (Cooling)
+	\type real
+	\ip-units in
+    N9, \field Capillary Tube Coil Diameter (Cooling)
+	\type real
+	\ip-units in
+    N10, \field Capillary Tube Length (Heating)
+	 \type real
+	 \ip-units in
+    N11, \field Capillary Tube Diameter (Heating)
+	 \type real
+	 \ip-units in
+    N12, \field Capillary Tube Coil Diameter (Heating)
+	 \type real
+	 \ip-units in
+    !--- TXV ---
+    N13, \field Model (Cooling) Rated Capacity [tons]
+	 \type real
+    N14, \field Model (Heating) Rated Capacity [tons]
+	 \type real
+    !--- Distibutor ---
+    N15, \field Distibutor Tube Length (Cooling)
+	 \type real
+	 \ip-units in
+    N16; \field Distibutor Tube Length (Heating)
+	 \type real
+	 \ip-units in
+ 
+RefrigerantLineData,
+	\unique-object
+	\required-object
+	\memo Physical Data on the Refrigerant Line for five lines:
+	\memo Suction, Discharge, Liquid, Reversing Valve to IDC
+	\memo and Reversing Valve to ODC.
+    A1, \field Refrigerant Line
+	\type alpha
+	\deprecated
+    A2, \field Tube Type
+	\type alpha
+	\deprecated
+    N1, \field Refrigerant Line Length
+	\type real
+	\units ft
+	\required-field
+    N2, \field Refrigerant Line Elevation
+	\type real
+	\units ft
+	\required-field
+    N3, \field Refrigerant Line Heat Loss
+	\type real
+	\units Btu/h
+	\required-field
+    N4, \field Refrigerant Line Temperature Change
+	\type real
+	\units R
+	\required-field
+    N5, \field Tube Conductivity
+	\type real
+	\units Btu-in/h-ft2-F
+	\deprecated
+    N6, \field Tube Inside Diameter
+	\type real
+	\ip-units in
+	\required-field
+    N7, \field Tube Outside Diameter
+	\type real
+	\ip-units in
+	\required-field
+    N8, \field Additional Pressure Drop
+	\type real
+	\ip-units inH2O
+	\required-field
+    N9, \field Charge in Line
+	\type real
+	\units lb
+	\deprecated
+    A3, \field Refrigerant Line
+	\type alpha
+	\deprecated
+    A4, \field Tube Type
+	\type alpha
+	\deprecated
+    N10, \field Refrigerant Line Length
+	 \type real
+	 \units ft
+	 \required-field
+    N11, \field Refrigerant Line Elevation
+	 \type real
+	 \units ft
+	 \required-field
+    N12, \field Refrigerant Line Heat Loss
+	 \type real
+	 \units Btu/h
+	 \required-field
+    N13, \field Refrigerant Line Temperature Change
+	 \type real
+	 \units R
+	 \required-field
+    N14, \field Tube Conductivity
+	 \type real
+	 \units Btu-in/h-ft2-F
+	 \deprecated
+    N15, \field Tube Inside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N16, \field Tube Outside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N17, \field Additional Pressure Drop
+	 \type real
+	 \ip-units inH2O
+	 \required-field
+    N18, \field Charge in Line
+	 \type real
+	 \units lb
+	 \deprecated
+    A5, \field Refrigerant Line
+	\type alpha
+	\deprecated
+    A6, \field Tube Type
+	\type alpha
+	\deprecated
+    N19, \field Refrigerant Line Length
+	 \type real
+	 \units ft
+	 \required-field
+    N20, \field Refrigerant Line Elevation
+	 \type real
+	 \units ft
+	 \required-field
+    N21, \field Refrigerant Line Heat Loss
+	 \type real
+	 \units Btu/h
+	 \required-field
+    N22, \field Refrigerant Line Temperature Change
+	 \type real
+	 \units R
+	 \required-field
+    N23, \field Tube Conductivity
+	 \type real
+	 \units Btu-in/h-ft2-F
+	 \deprecated
+    N24, \field Tube Inside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N25, \field Tube Outside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N26, \field Additional Pressure Drop
+	 \type real
+	 \ip-units inH2O
+	 \required-field
+    N27, \field Charge in Line
+	 \type real
+	 \units lb
+	 \deprecated
+    A7, \field Refrigerant Line
+	\type alpha
+	\deprecated
+    A8, \field Tube Type
+	\type alpha
+	\deprecated
+    N28, \field Refrigerant Line Length
+	 \type real
+	 \units ft
+	 \required-field
+    N29, \field Refrigerant Line Elevation
+	 \type real
+	 \units ft
+	 \required-field
+    N30, \field Refrigerant Line Heat Loss
+	 \type real
+	 \units Btu/h
+	 \required-field
+    N31, \field Refrigerant Line Temperature Change
+	 \type real
+	 \units R
+	 \required-field
+    N32, \field Tube Conductivity
+	 \type real
+	 \units Btu-in/h-ft2-F
+	 \deprecated
+    N33, \field Tube Inside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N34, \field Tube Outside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N35, \field Additional Pressure Drop
+	 \type real
+	 \ip-units inH2O
+	 \required-field
+    N36, \field Charge in Line
+	 \type real
+	 \units lb
+	 \deprecated
+    A9, \field Refrigerant Line
+	\type alpha
+	\deprecated
+    A10, \field Tube Type
+	 \type alpha
+	 \deprecated
+    N37, \field Refrigerant Line Length
+	 \type real
+	 \units ft
+	 \required-field
+    N38, \field Refrigerant Line Elevation
+	 \type real
+	 \units ft
+	 \required-field
+    N39, \field Refrigerant Line Heat Loss
+	 \type real
+	 \units Btu/h
+	 \required-field
+    N40, \field Refrigerant Line Temperature Change
+	 \type real
+	 \units R
+	 \required-field
+    N41, \field Tube Conductivity
+	 \type real
+	 \units Btu-in/h-ft2-F
+	 \deprecated
+    N42, \field Tube Inside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N43, \field Tube Outside Diameter
+	 \type real
+	 \ip-units in
+	 \required-field
+    N44; \field Additional Pressure Drop
+	 \type real
+	 \ip-units inH2O
+	 \required-field
+ 
+RefrigerantCycleData(Cooling),
+	\unique-object
+	\required-object
+	\memo Cooling Data on the Refrigerant Cycle.
+	\memo Contains the Expansion Device Inlet liquid temperature.
+    N1; \field Temperature
+	 \type real
+	 \units F
+	 \required-field
+ 
+RefrigerantCycleData(Heating),
+	\unique-object
+	\required-object
+	\memo Heating Data on the Refrigerant Cycle.
+	\memo Contains the Compressor discharge temperature, barometric pressure,
+	\memo and whether or not the compressor is in the air stream.
+    N1, \field Temperature
+	\type real
+	\units F
+	\required-field
+    N2, \field Barometric Pressure
+	 \type real
+	 \units psi
+	 \required-field
+    N3; \field Is Compressor in Air Stream
+	 \note 1=yes, 0=no
+	 \type integer
+	 \minimum 0
+	 \maximum 1
+	 \required-field
+ 
+AccumulatorData,
+	\unique-object
+	\required-object
+	\memo Contains physical and design data for the accumulator.
+    A1, \field Manufacturer
+	\type alpha
+	\deprecated
+    A2, \field Model
+	\type alpha
+	\deprecated
+    N1, \field Height
+	\type real
+	\ip-units in
+	\required-field
+    N2, \field Diameter
+	\type real
+	\ip-units in
+	\required-field
+    N3, \field Upper Hole Diameter
+	\type real
+	\ip-units in
+	\required-field
+    N4, \field Lower Hole Diameter
+	\type real
+	\ip-units in
+	\required-field
+    N5, \field Rating Pressure Drop
+	\type real
+	\units psi
+	\required-field
+    N6, \field Hole Distance
+	\type real
+	\ip-units in
+	\required-field
+    N8, \field Rating Temperature Drop
+	\type real
+	\units R
+	\required-field
+    N9, \field Coefficient-M
+	\type real
+	\required-field
+    N10; \field Coefficient-B
+	 \type real
+	 \required-field
+ 
+FilterDrierData,
+	\unique-object
+	\required-object
+	\memo Contains the flow and pressure drop data for the filter drier.
+    A1, \field Manufacturer
+	\type alpha
+	\deprecated
+    A2, \field Model
+	\type alpha
+	\deprecated
+    N1, \field Flow Capacity
+	\type real
+	\units tons
+	\note Tons is not an Energy+ standard unit.
+	\required-field
+    N2; \field Rating Pressure Drop
+	\type real
+	\units psi
+	\required-field
+
+CustomAirSideHeatTransferData,
+	\unique-object
+	\required-object
+	\memo Contains Air Side Heat Transfer and Pressure Drop modeling data.
+    ! --- Indoor Coil ---
+    N1, \field Unit
+	\type integer
+	\minimum 1
+	\maximum 2
+	\notes 1=SI, 2=IP
+	\required-field
+    ! *** Heat Transfer Data ***
+    N2, \field Curve Type
+	\type integer
+	\minimum 1
+	\maximum 2
+	\note 1=Power Fit, 2=Polynomial Fit
+	\required-field
+    N3, \field Power Fit Coefficient A
+	\type real
+	\required-field
+    N4, \field Power Fit Coefficient B
+	\type real
+	\required-field
+    N5, \field Polynomial Fit Coefficient C1
+	\type real
+	\required-field
+    N6, \field Polynomial Fit Coefficient C2
+	\type real
+	\required-field
+    N7, \field Polynomial Fit Coefficient C3
+	\type real
+	\required-field
+    N8, \field Polynomial Fit Coefficient C4
+	\type real
+	\required-field
+    ! *** Pressure Drop Data ***
+    N9, \field Curve Type
+	\type integer
+	\minimum 1
+	\maximum 2
+	\notes 1=Power Fit, 2=Polynomial Fit
+	\required-field
+    N10, \field Power Fit Coefficient A
+	 \type real
+	 \required-field
+    N11, \field Power Fit Coefficient B
+	 \type real
+	 \required-field
+    N12, \field Polynomial Fit Coefficient C1
+	 \type real
+	 \required-field
+    N13, \field Polynomial Fit Coefficient C2
+	 \type real
+	 \required-field
+    N14, \field Polynomial Fit Coefficient C3
+	 \type real
+	 \required-field
+    N15, \field Polynomial Fit Coefficient C4
+	 \type real
+	 \required-field
+    ! --- Outdoor Coil ---
+    N16, \field Unit
+	 \type integer
+	 \minimum 1
+	 \maximum 2
+	 \notes 1=SI, 2=IP
+	 \required-field
+    ! *** Heat Transfer Data ***
+    N17, \field Curve Type
+	 \type integer
+	 \minimum 1
+	 \maximum 2
+	 \note 1=Power Fit, 2=Polynomial Fit
+	 \required-field
+    N18, \field Power Fit Coefficient A
+	 \type real
+	 \required-field
+    N19, \field Power Fit Coefficient B
+	 \type real
+	 \required-field
+    N20, \field Polynomial Fit Coefficient C1
+	 \type real
+	 \required-field
+    N21, \field Polynomial Fit Coefficient C2
+	 \type real
+	 \required-field
+    N22, \field Polynomial Fit Coefficient C3
+	 \type real
+	 \required-field
+    N23, \field Polynomial Fit Coefficient C4
+	 \type real
+	 \required-field
+    ! *** Pressure Drop Data ***
+    N24, \field Curve Type
+	 \type integer
+	 \minimum 1
+	 \maximum 2
+	 \note 1=Power Fit, 2=Polynomial Fit
+	 \required-field
+    N25, \field Power Fit Coefficient A
+	 \type real
+	 \required-field
+    N26, \field Power Fit Coefficient B
+	 \type real
+	 \required-field
+    N27, \field Polynomial Fit Coefficient C1
+	 \type real
+	 \required-field
+    N28, \field Polynomial Fit Coefficient C2
+	 \type real
+	 \required-field
+    N29, \field Polynomial Fit Coefficient C3
+	 \type real
+	 \required-field
+    N30; \field Polynomial Fit Coefficient C4
+	 \type real
+	 \required-field
+ 
+ChargeTuningCurve,
+	\unique-object
+	\required-object
+	\memo Contains data for Charge Tuning including Tuning Points.
+    A1, \field Is Charge Tuning
+	\type choice
+	\key TRUE
+	\key FALSE
+	\required-field
+    N1, \field Tuning Point #1 Simulated Charge
+	\type real
+	\required-field
+    N2, \field Tuning Point #1 Liquid Length
+	\type real
+	\required-field
+    N3, \field Tuning Point #2 Simulated Charge
+	\type real
+	\required-field
+    N4; \field Tuning Point #2 Liquid Length
+	\type real
+	\required-field
+
+\group IDCckt
+
+IDCcktModel,
+	A1; \field Model Name
+	    \type alpha
+IDCcktGeometry,
+	A1, \field SI Units Flag
+	    \type choice
+	    \key False
+	    \key True
+	    \default True
+	N1, \field Fin Type
+	    \type integer
+	A2, \field Fin Name
+	    \type alpha
+	N2, \field Fin Pitch [FPI]
+	    \type real
+	N3, \field Fin Conductivity
+	    \type real
+	    \units Btu-in/h-ft2-F
+	N4, \field Fin Thickness
+	    \type real
+	    \units in/1000
+	    \note Assuming [thou] = thousandths of an inch
+	A3, \field Fin Material
+	    \type alpha
+	N5, \field Tube Type
+	    \type integer
+	A4, \field Tube Name
+	    \type alpha
+	N6, \field Tube OD
+	    \type real
+	    \ip-units in
+	N7, \field Tube ID
+	    \type real
+	    \ip-units in
+	N8, \field Tube Conductivity
+	    \type real
+	    \units Btu-in/h-ft2-F
+	N9, \field Tube Vertical Spacing
+	    \type real
+	    \ip-units in
+	N10, \field Tube Horizontal Spacing
+	     \type real
+	     \ip-units in
+	N11, \field Number of Rows
+	     \type real
+	N12, \field Number of Tubes per Row
+	     \type real
+	N13, \field Single Tube Length
+	     \type real
+	     \ip-units in
+	N14, \field Number of Segments
+	     \type integer
+	N15, \field Number of Circuits
+	     \type integer
+	A5; \field Tube Shift Flag
+	    \type alpha
+
+IDCcktCircuiting_TubeNumbers,
+	N1, \field Number of Tubes in Circuit 1
+	    \type real
+	N2, \field Number of Tubes in Circuit 2
+	    \type real
+	N3, \field Number of Tubes in Circuit 3
+	    \type real
+	N4, \field Number of Tubes in Circuit 4
+	    \type real
+	N5, \field Number of Tubes in Circuit 5
+	    \type real
+	N6; \field Number of Tubes in Circuit 6
+	    \type real
+
+IDCcktCircuit1_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	     \type real
+	N20; \field Tube Number
+	     \type real
+
+IDCcktCircuit2_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	     \type real
+	N20; \field Tube Number
+	     \type real
+
+IDCcktCircuit3_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	     \type real
+	N20; \field Tube Number
+	     \type real
+
+IDCcktCircuit4_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	N20; \field Tube Number
+	     \type real
+
+IDCcktCircuit5_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	     \type real
+	N20; \field Tube Number
+	     \type real
+
+IDCcktCircuit6_TubeSequence,
+	N1, \field Tube Number
+	    \type real
+	N2, \field Tube Number
+	    \type real
+	N3, \field Tube Number
+	    \type real
+	N4, \field Tube Number
+	    \type real
+	N5, \field Tube Number
+	    \type real
+	N6, \field Tube Number
+	    \type real
+	N7, \field Tube Number
+	    \type real
+	N8, \field Tube Number
+	    \type real
+	N9, \field Tube Number
+	    \type real
+	N10, \field Tube Number
+	     \type real
+	N11, \field Tube Number
+	     \type real
+	N12, \field Tube Number
+	     \type real
+	N13, \field Tube Number
+	     \type real
+	N14, \field Tube Number
+	     \type real
+	N15, \field Tube Number
+	     \type real
+	N16, \field Tube Number
+	     \type real
+	N17, \field Tube Number
+	     \type real
+	N18, \field Tube Number
+	     \type real
+	N19, \field Tube Number
+	     \type real
+	N20; \field Tube Number
+	     \type real
+
+IDCcktVelocityProfile,
+	N1, \field Velocity Deviation from Mean Value for Tube 1
+	    \type real
+	N2, \field Velocity Deviation from Mean Value for Tube 2
+	    \type real
+	N3, \field Velocity Deviation from Mean Value for Tube 3
+	    \type real
+	N4, \field Velocity Deviation from Mean Value for Tube 4
+	    \type real
+	N5, \field Velocity Deviation from Mean Value for Tube 5
+	    \type real
+	N6, \field Velocity Deviation from Mean Value for Tube 6
+	    \type real
+	N7, \field Velocity Deviation from Mean Value for Tube 7
+	    \type real
+	N8, \field Velocity Deviation from Mean Value for Tube 8
+	    \type real
+	N9, \field Velocity Deviation from Mean Value for Tube 9
+	    \type real
+	N10, \field Velocity Deviation from Mean Value for Tube 10
+	     \type real
+	N11, \field Velocity Deviation from Mean Value for Tube 11
+	     \type real
+	N12, \field Velocity Deviation from Mean Value for Tube 12
+	     \type real
+	N13, \field Velocity Deviation from Mean Value for Tube 13
+	     \type real
+	N14, \field Velocity Deviation from Mean Value for Tube 14
+	     \type real
+	N15, \field Velocity Deviation from Mean Value for Tube 15
+	     \type real
+	N16, \field Velocity Deviation from Mean Value for Tube 16
+	     \type real
+	N17, \field Velocity Deviation from Mean Value for Tube 17
+	     \type real
+	N18, \field Velocity Deviation from Mean Value for Tube 18
+	     \type real
+	N19, \field Velocity Deviation from Mean Value for Tube 19
+	     \type real
+	N20, \field Velocity Deviation from Mean Value for Tube 20
+	     \type real
+	N21, \field Velocity Deviation from Mean Value for Tube 21
+	     \type real
+	N22, \field Velocity Deviation from Mean Value for Tube 22
+	     \type real
+	N23, \field Velocity Deviation from Mean Value for Tube 23
+	     \type real
+	N24, \field Velocity Deviation from Mean Value for Tube 24
+	     \type real
+	N25, \field Velocity Deviation from Mean Value for Tube 25
+	     \type real
+	N26, \field Velocity Deviation from Mean Value for Tube 26
+	     \type real
+	N27, \field Velocity Deviation from Mean Value for Tube 27
+	     \type real
+	N28, \field Velocity Deviation from Mean Value for Tube 28
+	     \type real
+	N29, \field Velocity Deviation from Mean Value for Tube 29
+	     \type real
+	N30, \field Velocity Deviation from Mean Value for Tube 30
+	     \type real
+	N31, \field Velocity Deviation from Mean Value for Tube 31
+	     \type real
+	N32, \field Velocity Deviation from Mean Value for Tube 32
+	     \type real
+	N33, \field Velocity Deviation from Mean Value for Tube 33
+	     \type real
+	N34, \field Velocity Deviation from Mean Value for Tube 34
+	     \type real
+	N35, \field Velocity Deviation from Mean Value for Tube 35
+	     \type real
+	N36, \field Velocity Deviation from Mean Value for Tube 36
+	     \type real
+	N37, \field Velocity Deviation from Mean Value for Tube 37
+	     \type real
+	N38, \field Velocity Deviation from Mean Value for Tube 38
+	     \type real
+	N39, \field Velocity Deviation from Mean Value for Tube 39
+	     \type real
+	N40; \field Velocity Deviation from Mean Value for Tube 40
+	     \type real
+
+IDCcktCoefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 1
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+IDCcktVelocityProfileRawData,
+	\memo All for segment 1
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+\group ODCckt
+
+ODCcktModel,
+	A1; \field Model Name
+	    \type alpha
+
+ODCcktGeometry,
+	A1, \field SI Units Flag
+	    \type choice
+	    \key False
+	    \key True
+	    \default True
+	N1, \field Fin Type
+	    \type integer
+	A2, \field Fin Name
+	    \type alpha
+	N2, \field Fin Pitch [FPI]
+	    \type real
+	N3, \field Fin Conductivity
+	    \type real
+	    \units Btu-in/h-ft2-F
+	N4, \field Fin Thickness
+	    \type real
+	    \units in/1000
+	    \note Assuming [thou] = thousandths of an inch
+	A3, \field Fin Material
+	    \type alpha
+	N5, \field Tube Type
+	    \type integer
+	A4, \field Tube Name
+	    \type alpha
+	N6, \field Tube Height
+	    \type real
+	    \ip-units in
+	N7, \field Tube Depth
+	    \type real
+	    \ip-units in
+	N8, \field Tube Thickness
+	    \type real
+	    \ip-units in
+	N9, \field Tube Conductivity
+	    \type real
+	    \units Btu-in/h-ft2-F
+	N10, \field Tube Vertical Spacing
+	    \type real
+	    \ip-units in
+	N11, \field Number of Rows
+	     \type real
+	N12, \field Number of Tubes per Row
+	     \type real
+	N13, \field Single Tube Length
+	     \type real
+	     \ip-units in
+	A5, \field Tube Orientation
+	    \type alpha
+	N14, \field Number of Segments
+	     \type integer
+	N15, \field Number of Circuits
+	     \type integer
+	N16; \field Channel Diameter
+	     \type real
+	     \ip-units in
+
+ODCcktCircuiting_Slab1,
+	N1, \field Slab #
+	    \type real
+	N2, \field # of Passes
+	    \type real
+	N3, \field Tubes per Pass 1?
+	    \type real
+	N4, \field Tubes per Pass 2?
+	    \type real
+	N5, \field Inlets
+	    \type real
+	N6; \field Tubes per Inlet
+	    \type real
+
+ODCcktVelocityProfile,
+	N1, \field Velocity Deviation from Mean Value for Tube 1
+	    \type real
+	N2, \field Velocity Deviation from Mean Value for Tube 2
+	    \type real
+	N3, \field Velocity Deviation from Mean Value for Tube 3
+	    \type real
+	N4, \field Velocity Deviation from Mean Value for Tube 4
+	    \type real
+	N5, \field Velocity Deviation from Mean Value for Tube 5
+	    \type real
+	N6, \field Velocity Deviation from Mean Value for Tube 6
+	    \type real
+	N7, \field Velocity Deviation from Mean Value for Tube 7
+	    \type real
+	N8, \field Velocity Deviation from Mean Value for Tube 8
+	    \type real
+	N9, \field Velocity Deviation from Mean Value for Tube 9
+	    \type real
+	N10, \field Velocity Deviation from Mean Value for Tube 10
+	     \type real
+	N11, \field Velocity Deviation from Mean Value for Tube 11
+	     \type real
+	N12, \field Velocity Deviation from Mean Value for Tube 12
+	     \type real
+	N13, \field Velocity Deviation from Mean Value for Tube 13
+	     \type real
+	N14, \field Velocity Deviation from Mean Value for Tube 14
+	     \type real
+	N15, \field Velocity Deviation from Mean Value for Tube 15
+	     \type real
+	N16, \field Velocity Deviation from Mean Value for Tube 16
+	     \type real
+	N17, \field Velocity Deviation from Mean Value for Tube 17
+	     \type real
+	N18, \field Velocity Deviation from Mean Value for Tube 18
+	     \type real
+	N19, \field Velocity Deviation from Mean Value for Tube 19
+	     \type real
+	N20, \field Velocity Deviation from Mean Value for Tube 20
+	     \type real
+	N21, \field Velocity Deviation from Mean Value for Tube 21
+	     \type real
+	N22, \field Velocity Deviation from Mean Value for Tube 22
+	     \type real
+	N23, \field Velocity Deviation from Mean Value for Tube 23
+	     \type real
+	N24, \field Velocity Deviation from Mean Value for Tube 24
+	     \type real
+	N25, \field Velocity Deviation from Mean Value for Tube 25
+	     \type real
+	N26, \field Velocity Deviation from Mean Value for Tube 26
+	     \type real
+	N27, \field Velocity Deviation from Mean Value for Tube 27
+	     \type real
+	N28, \field Velocity Deviation from Mean Value for Tube 28
+	     \type real
+	N29, \field Velocity Deviation from Mean Value for Tube 29
+	     \type real
+	N30, \field Velocity Deviation from Mean Value for Tube 30
+	     \type real
+	N31, \field Velocity Deviation from Mean Value for Tube 31
+	     \type real
+	N32, \field Velocity Deviation from Mean Value for Tube 32
+	     \type real
+	N33, \field Velocity Deviation from Mean Value for Tube 33
+	     \type real
+	N34, \field Velocity Deviation from Mean Value for Tube 34
+	     \type real
+	N35, \field Velocity Deviation from Mean Value for Tube 35
+	     \type real
+	N36, \field Velocity Deviation from Mean Value for Tube 36
+	     \type real
+	N37, \field Velocity Deviation from Mean Value for Tube 37
+	     \type real
+	N38, \field Velocity Deviation from Mean Value for Tube 38
+	     \type real
+	N39, \field Velocity Deviation from Mean Value for Tube 39
+	     \type real
+	N40, \field Velocity Deviation from Mean Value for Tube 40
+	     \type real
+	N41, \field Velocity Deviation from Mean Value for Tube 41
+	     \type real
+	N42, \field Velocity Deviation from Mean Value for Tube 42
+	     \type real
+	N43, \field Velocity Deviation from Mean Value for Tube 43
+	     \type real
+	N44, \field Velocity Deviation from Mean Value for Tube 44
+	     \type real
+	N45, \field Velocity Deviation from Mean Value for Tube 45
+	     \type real
+	N46, \field Velocity Deviation from Mean Value for Tube 46
+	     \type real
+	N47; \field Velocity Deviation from Mean Value for Tube 47
+	     \type real
+
+ODCcktSegment1_Coefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 1
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+ODCcktSegment2_Coefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 2
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+ODCcktSegment3_Coefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 3
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+ODCcktSegment4_Coefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 4
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+ODCcktSegment5_Coefficients,
+	\memo V=C0+C1*H+C2*H^2+C3*H^3
+	\memo for segment 5
+	N1, \field C0
+	    \type real
+	N2, \field C1
+	    \type real
+	N3, \field C2
+	    \type real
+	N4; \field C3
+	    \type real
+
+ODCcktSegment1_VelocityProfileRawData,
+	\memo All for segment 1
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+ODCcktSegment2_VelocityProfileRawData,
+	\memo All for segment 2
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+ODCcktSegment3_VelocityProfileRawData,
+	\memo All for segment 3
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+ODCcktSegment4_VelocityProfileRawData,
+	\memo All for segment 4
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+ODCcktSegment5_VelocityProfileRawData,
+	\memo All for segment 5
+	N1, \field No. of Data
+	    \type integer
+	N2, \field Coil Height Data Entry #1
+	    \type real
+	N3, \field Coil Height Data Entry #2
+	    \type real
+	N4, \field Coil Height Data Entry #3
+	    \type real
+	N5, \field Coil Height Data Entry #4
+	    \type real
+	N6, \field Coil Height Data Entry #5
+	    \type real
+	N7, \field Coil Height Data Entry #6
+	    \type real
+	N8, \field Velocity Data Entry #1
+	    \type real
+	N9, \field Velocity Data Entry #2
+	    \type real
+	N10, \field Velocity Data Entry #3
+	     \type real
+	N11, \field Velocity Data Entry #4
+	     \type real
+	N12, \field Velocity Data Entry #5
+	     \type real
+	N13; \field Velocity Data Entry #6
+	     \type real
+
+\group Fluid Properties
+
+FluidNames,
+       \unique-object
+       \memo list of potential fluid names\types in the input file, maximum of ten
+  A1,  \field fluid name 1
+       \type alpha
+  A2,  \field type of fluid for fluid name 1
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A3,  \field fluid name 2
+       \type alpha
+  A4,  \field type of fluid for fluid name 2
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A5,  \field fluid name 3
+       \type alpha
+  A6,  \field type of fluid for fluid name 3
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A7,  \field fluid name 4
+       \type alpha
+  A8,  \field type of fluid for fluid name 4
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A9,  \field fluid name 5
+       \type alpha
+  A10, \field type of fluid for fluid name 5
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A11, \field fluid name 6
+       \type alpha
+  A12, \field type of fluid for fluid name 6
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A13, \field fluid name 7
+       \type alpha
+  A14, \field type of fluid for fluid name 7
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A15, \field fluid name 8
+       \type alpha
+  A16, \field type of fluid for fluid name 8
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A17, \field fluid name 9
+       \type alpha
+  A18, \field type of fluid for fluid name 9
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+  A19, \field fluid name 10
+       \type alpha
+  A20; \field type of fluid for fluid name 10
+       \type choice
+       \key REFRIGERANT
+       \key GLYCOL
+
+FluidPropertyTemperatures,
+      \memo property values for fluid properties
+      \memo list of up to 250 temperatures, note that number of property values must match the number of properties
+      \memo in other words, there MUST be a one-to-one correspondance between the property values in this list and
+      \memo the actual properties list in other syntax
+      \memo degrees C (for all temperature inputs)
+  A1, \field temperature list name
+      \type alpha
+  N1, \field temperature 1
+      \type real
+      \units C
+  N2, \field temperature 2
+      \type real
+      \units C
+  N3, \field temperature 3
+      \type real
+      \units C
+  N4, \field temperature 4
+      \type real
+      \units C
+  N5, \field temperature 5
+      \type real
+      \units C
+  N6, \field temperature 6
+      \type real
+      \units C
+  N7, \field temperature 7
+      \type real
+      \units C
+  N8, \field temperature 8
+      \type real
+      \units C
+  N9, \field temperature 9
+      \type real
+      \units C
+  N10, \field temperature 10
+       \type real
+       \units C
+  N11, \field temperature 11
+       \type real
+       \units C
+  N12, \field temperature 12
+       \type real
+       \units C
+  N13, \field temperature 13
+       \type real
+       \units C
+  N14, \field temperature 14
+       \type real
+       \units C
+  N15, \field temperature 15
+       \type real
+       \units C
+  N16, \field temperature 16
+       \type real
+       \units C
+  N17, \field temperature 17
+       \type real
+       \units C
+  N18, \field temperature 18
+       \type real
+       \units C
+  N19, \field temperature 19
+       \type real
+       \units C
+  N20, \field temperature 20
+       \type real
+       \units C
+  N21, \field temperature 21
+       \type real
+       \units C
+  N22, \field temperature 22
+       \type real
+       \units C
+  N23, \field temperature 23
+       \type real
+       \units C
+  N24, \field temperature 24
+       \type real
+       \units C
+  N25, \field temperature 25
+       \type real
+       \units C
+  N26, \field temperature 26
+       \type real
+       \units C
+  N27, \field temperature 27
+       \type real
+       \units C
+  N28, \field temperature 28
+       \type real
+       \units C
+  N29, \field temperature 29
+       \type real
+       \units C
+  N30, \field temperature 30
+       \type real
+       \units C
+  N31, \field temperature 31
+       \type real
+       \units C
+  N32, \field temperature 32
+       \type real
+       \units C
+  N33, \field temperature 33
+       \type real
+       \units C
+  N34, \field temperature 34
+       \type real
+       \units C
+  N35, \field temperature 35
+       \type real
+       \units C
+  N36, \field temperature 36
+       \type real
+       \units C
+  N37, \field temperature 37
+       \type real
+       \units C
+  N38, \field temperature 38
+       \type real
+       \units C
+  N39, \field temperature 39
+       \type real
+       \units C
+  N40, \field temperature 40
+       \type real
+       \units C
+  N41, \field temperature 41
+       \type real
+       \units C
+  N42, \field temperature 42
+       \type real
+       \units C
+  N43, \field temperature 43
+       \type real
+       \units C
+  N44, \field temperature 44
+       \type real
+       \units C
+  N45, \field temperature 45
+       \type real
+       \units C
+  N46, \field temperature 46
+       \type real
+       \units C
+  N47, \field temperature 47
+       \type real
+       \units C
+  N48, \field temperature 48
+       \type real
+       \units C
+  N49, \field temperature 49
+       \type real
+       \units C
+  N50, \field temperature 50
+       \type real
+       \units C
+  N51, \field temperature 51
+       \type real
+       \units C
+  N52, \field temperature 52
+       \type real
+       \units C
+  N53, \field temperature 53
+       \type real
+       \units C
+  N54, \field temperature 54
+       \type real
+       \units C
+  N55, \field temperature 55
+       \type real
+       \units C
+  N56, \field temperature 56
+       \type real
+       \units C
+  N57, \field temperature 57
+       \type real
+       \units C
+  N58, \field temperature 58
+       \type real
+       \units C
+  N59, \field temperature 59
+       \type real
+       \units C
+  N60, \field temperature 60
+       \type real
+       \units C
+  N61, \field temperature 61
+       \type real
+       \units C
+  N62, \field temperature 62
+       \type real
+       \units C
+  N63, \field temperature 63
+       \type real
+       \units C
+  N64, \field temperature 64
+       \type real
+       \units C
+  N65, \field temperature 65
+       \type real
+       \units C
+  N66, \field temperature 66
+       \type real
+       \units C
+  N67, \field temperature 67
+       \type real
+       \units C
+  N68, \field temperature 68
+       \type real
+       \units C
+  N69, \field temperature 69
+       \type real
+       \units C
+  N70, \field temperature 70
+       \type real
+       \units C
+  N71, \field temperature 71
+       \type real
+       \units C
+  N72, \field temperature 72
+       \type real
+       \units C
+  N73, \field temperature 73
+       \type real
+       \units C
+  N74, \field temperature 74
+       \type real
+       \units C
+  N75, \field temperature 75
+       \type real
+       \units C
+  N76, \field temperature 76
+       \type real
+       \units C
+  N77, \field temperature 77
+       \type real
+       \units C
+  N78, \field temperature 78
+       \type real
+       \units C
+  N79, \field temperature 79
+       \type real
+       \units C
+  N80, \field temperature 80
+       \type real
+       \units C
+  N81, \field temperature 81
+       \type real
+       \units C
+  N82, \field temperature 82
+       \type real
+       \units C
+  N83, \field temperature 83
+       \type real
+       \units C
+  N84, \field temperature 84
+       \type real
+       \units C
+  N85, \field temperature 85
+       \type real
+       \units C
+  N86, \field temperature 86
+       \type real
+       \units C
+  N87, \field temperature 87
+       \type real
+       \units C
+  N88, \field temperature 88
+       \type real
+       \units C
+  N89, \field temperature 89
+       \type real
+       \units C
+  N90, \field temperature 90
+       \type real
+       \units C
+  N91, \field temperature 91
+       \type real
+       \units C
+  N92, \field temperature 92
+       \type real
+       \units C
+  N93, \field temperature 93
+       \type real
+       \units C
+  N94, \field temperature 94
+       \type real
+       \units C
+  N95, \field temperature 95
+       \type real
+       \units C
+  N96, \field temperature 96
+       \type real
+       \units C
+  N97, \field temperature 97
+       \type real
+       \units C
+  N98, \field temperature 98
+       \type real
+       \units C
+  N99, \field temperature 99
+       \type real
+       \units C
+  N100, \field temperature 100
+        \type real
+        \units C
+  N101, \field temperature 101
+        \type real
+        \units C
+  N102, \field temperature 102
+        \type real
+        \units C
+  N103, \field temperature 103
+        \type real
+        \units C
+  N104, \field temperature 104
+        \type real
+        \units C
+  N105, \field temperature 105
+        \type real
+        \units C
+  N106, \field temperature 106
+        \type real
+        \units C
+  N107, \field temperature 107
+        \type real
+        \units C
+  N108, \field temperature 108
+        \type real
+        \units C
+  N109, \field temperature 109
+        \type real
+        \units C
+  N110, \field temperature 110
+        \type real
+        \units C
+  N111, \field temperature 111
+        \type real
+        \units C
+  N112, \field temperature 112
+        \type real
+        \units C
+  N113, \field temperature 113
+        \type real
+        \units C
+  N114, \field temperature 114
+        \type real
+        \units C
+  N115, \field temperature 115
+        \type real
+        \units C
+  N116, \field temperature 116
+        \type real
+        \units C
+  N117, \field temperature 117
+        \type real
+        \units C
+  N118, \field temperature 118
+        \type real
+        \units C
+  N119, \field temperature 119
+        \type real
+        \units C
+  N120, \field temperature 120
+        \type real
+        \units C
+  N121, \field temperature 121
+        \type real
+        \units C
+  N122, \field temperature 122
+        \type real
+        \units C
+  N123, \field temperature 123
+        \type real
+        \units C
+  N124, \field temperature 124
+        \type real
+        \units C
+  N125, \field temperature 125
+        \type real
+        \units C
+  N126, \field temperature 126
+        \type real
+        \units C
+  N127, \field temperature 127
+        \type real
+        \units C
+  N128, \field temperature 128
+        \type real
+        \units C
+  N129, \field temperature 129
+        \type real
+        \units C
+  N130, \field temperature 130
+        \type real
+        \units C
+  N131, \field temperature 131
+        \type real
+        \units C
+  N132, \field temperature 132
+        \type real
+        \units C
+  N133, \field temperature 133
+        \type real
+        \units C
+  N134, \field temperature 134
+        \type real
+        \units C
+  N135, \field temperature 135
+        \type real
+        \units C
+  N136, \field temperature 136
+        \type real
+        \units C
+  N137, \field temperature 137
+        \type real
+        \units C
+  N138, \field temperature 138
+        \type real
+        \units C
+  N139, \field temperature 139
+        \type real
+        \units C
+  N140, \field temperature 140
+        \type real
+        \units C
+  N141, \field temperature 141
+        \type real
+        \units C
+  N142, \field temperature 142
+        \type real
+        \units C
+  N143, \field temperature 143
+        \type real
+        \units C
+  N144, \field temperature 144
+        \type real
+        \units C
+  N145, \field temperature 145
+        \type real
+        \units C
+  N146, \field temperature 146
+        \type real
+        \units C
+  N147, \field temperature 147
+        \type real
+        \units C
+  N148, \field temperature 148
+        \type real
+        \units C
+  N149, \field temperature 149
+        \type real
+        \units C
+  N150, \field temperature 150
+        \type real
+        \units C
+  N151, \field temperature 151
+        \type real
+        \units C
+  N152, \field temperature 152
+        \type real
+        \units C
+  N153, \field temperature 153
+        \type real
+        \units C
+  N154, \field temperature 154
+        \type real
+        \units C
+  N155, \field temperature 155
+        \type real
+        \units C
+  N156, \field temperature 156
+        \type real
+        \units C
+  N157, \field temperature 157
+        \type real
+        \units C
+  N158, \field temperature 158
+        \type real
+        \units C
+  N159, \field temperature 159
+        \type real
+        \units C
+  N160, \field temperature 160
+        \type real
+        \units C
+  N161, \field temperature 161
+        \type real
+        \units C
+  N162, \field temperature 162
+        \type real
+        \units C
+  N163, \field temperature 163
+        \type real
+        \units C
+  N164, \field temperature 164
+        \type real
+        \units C
+  N165, \field temperature 165
+        \type real
+        \units C
+  N166, \field temperature 166
+        \type real
+        \units C
+  N167, \field temperature 167
+        \type real
+        \units C
+  N168, \field temperature 168
+        \type real
+        \units C
+  N169, \field temperature 169
+        \type real
+        \units C
+  N170, \field temperature 170
+        \type real
+        \units C
+  N171, \field temperature 171
+        \type real
+        \units C
+  N172, \field temperature 172
+        \type real
+        \units C
+  N173, \field temperature 173
+        \type real
+        \units C
+  N174, \field temperature 174
+        \type real
+        \units C
+  N175, \field temperature 175
+        \type real
+        \units C
+  N176, \field temperature 176
+        \type real
+        \units C
+  N177, \field temperature 177
+        \type real
+        \units C
+  N178, \field temperature 178
+        \type real
+        \units C
+  N179, \field temperature 179
+        \type real
+        \units C
+  N180, \field temperature 180
+        \type real
+        \units C
+  N181, \field temperature 181
+        \type real
+        \units C
+  N182, \field temperature 182
+        \type real
+        \units C
+  N183, \field temperature 183
+        \type real
+        \units C
+  N184, \field temperature 184
+        \type real
+        \units C
+  N185, \field temperature 185
+        \type real
+        \units C
+  N186, \field temperature 186
+        \type real
+        \units C
+  N187, \field temperature 187
+        \type real
+        \units C
+  N188, \field temperature 188
+        \type real
+        \units C
+  N189, \field temperature 189
+        \type real
+        \units C
+  N190, \field temperature 190
+        \type real
+        \units C
+  N191, \field temperature 191
+        \type real
+        \units C
+  N192, \field temperature 192
+        \type real
+        \units C
+  N193, \field temperature 193
+        \type real
+        \units C
+  N194, \field temperature 194
+        \type real
+        \units C
+  N195, \field temperature 195
+        \type real
+        \units C
+  N196, \field temperature 196
+        \type real
+        \units C
+  N197, \field temperature 197
+        \type real
+        \units C
+  N198, \field temperature 198
+        \type real
+        \units C
+  N199, \field temperature 199
+        \type real
+        \units C
+  N200, \field temperature 200
+        \type real
+        \units C
+  N201, \field temperature 201
+        \type real
+        \units C
+  N202, \field temperature 202
+        \type real
+        \units C
+  N203, \field temperature 203
+        \type real
+        \units C
+  N204, \field temperature 204
+        \type real
+        \units C
+  N205, \field temperature 205
+        \type real
+        \units C
+  N206, \field temperature 206
+        \type real
+        \units C
+  N207, \field temperature 207
+        \type real
+        \units C
+  N208, \field temperature 208
+        \type real
+        \units C
+  N209, \field temperature 209
+        \type real
+        \units C
+  N210, \field temperature 210
+        \type real
+        \units C
+  N211, \field temperature 211
+        \type real
+        \units C
+  N212, \field temperature 212
+        \type real
+        \units C
+  N213, \field temperature 213
+        \type real
+        \units C
+  N214, \field temperature 214
+        \type real
+        \units C
+  N215, \field temperature 215
+        \type real
+        \units C
+  N216, \field temperature 216
+        \type real
+        \units C
+  N217, \field temperature 217
+        \type real
+        \units C
+  N218, \field temperature 218
+        \type real
+        \units C
+  N219, \field temperature 219
+        \type real
+        \units C
+  N220, \field temperature 220
+        \type real
+        \units C
+  N221, \field temperature 221
+        \type real
+        \units C
+  N222, \field temperature 222
+        \type real
+        \units C
+  N223, \field temperature 223
+        \type real
+        \units C
+  N224, \field temperature 224
+        \type real
+        \units C
+  N225, \field temperature 225
+        \type real
+        \units C
+  N226, \field temperature 226
+        \type real
+        \units C
+  N227, \field temperature 227
+        \type real
+        \units C
+  N228, \field temperature 228
+        \type real
+        \units C
+  N229, \field temperature 229
+        \type real
+        \units C
+  N230, \field temperature 230
+        \type real
+        \units C
+  N231, \field temperature 231
+        \type real
+        \units C
+  N232, \field temperature 232
+        \type real
+        \units C
+  N233, \field temperature 233
+        \type real
+        \units C
+  N234, \field temperature 234
+        \type real
+        \units C
+  N235, \field temperature 235
+        \type real
+        \units C
+  N236, \field temperature 236
+        \type real
+        \units C
+  N237, \field temperature 237
+        \type real
+        \units C
+  N238, \field temperature 238
+        \type real
+        \units C
+  N239, \field temperature 239
+        \type real
+        \units C
+  N240, \field temperature 240
+        \type real
+        \units C
+  N241, \field temperature 241
+        \type real
+        \units C
+  N242, \field temperature 242
+        \type real
+        \units C
+  N243, \field temperature 243
+        \type real
+        \units C
+  N244, \field temperature 244
+        \type real
+        \units C
+  N245, \field temperature 245
+        \type real
+        \units C
+  N246, \field temperature 246
+        \type real
+        \units C
+  N247, \field temperature 247
+        \type real
+        \units C
+  N248, \field temperature 248
+        \type real
+        \units C
+  N249, \field temperature 249
+        \type real
+        \units C
+  N250; \field temperature 250
+        \type real
+        \units C
+
+FluidPropertySaturated,
+      \memo fluid properties for the saturated region
+  A1, \field fluid name (R11, R12, etc.)
+      \reference FluidNames
+  A2, \field fluid property type
+      \note ENTHALPY Units are J\kg
+      \note DENSITY Units are kg\m3
+      \note SPECIFICHEAT Units are J\kg-K
+      \note PRESSURE Units are Pa
+      \type choice
+      \key ENTHALPY     ! Units are J\kg
+      \key DENSITY      ! Units are kg\m3
+      \key SPECIFICHEAT ! Units are J\kg-K
+      \key PRESSURE     ! Units are Pa
+  A3, \field fluid phase
+      \note FLUID=saturated fluid
+      \note FLUIDGAS=difference between saturated fluid and saturated vapor
+      \type choice
+      \key FLUID        ! saturated fluid
+      \key FLUIDGAS     ! difference between saturated fluid and saturated vapor
+  A4, \field temperatures list name
+      \reference FluidPropertyTemperatures
+  N1, \field property value 1
+      \type real
+  N2, \field property value 2
+      \type real
+  N3, \field property value 3
+      \type real
+  N4, \field property value 4
+      \type real
+  N5, \field property value 5
+      \type real
+  N6, \field property value 6
+      \type real
+  N7, \field property value 7
+      \type real
+  N8, \field property value 8
+      \type real
+  N9, \field property value 9
+      \type real
+  N10, \field property value 10
+       \type real
+  N11, \field property value 11
+       \type real
+  N12, \field property value 12
+       \type real
+  N13, \field property value 13
+       \type real
+  N14, \field property value 14
+       \type real
+  N15, \field property value 15
+       \type real
+  N16, \field property value 16
+       \type real
+  N17, \field property value 17
+       \type real
+  N18, \field property value 18
+       \type real
+  N19, \field property value 19
+       \type real
+  N20, \field property value 20
+       \type real
+  N21, \field property value 21
+       \type real
+  N22, \field property value 22
+       \type real
+  N23, \field property value 23
+       \type real
+  N24, \field property value 24
+       \type real
+  N25, \field property value 25
+       \type real
+  N26, \field property value 26
+       \type real
+  N27, \field property value 27
+       \type real
+  N28, \field property value 28
+       \type real
+  N29, \field property value 29
+       \type real
+  N30, \field property value 30
+       \type real
+  N31, \field property value 31
+       \type real
+  N32, \field property value 32
+       \type real
+  N33, \field property value 33
+       \type real
+  N34, \field property value 34
+       \type real
+  N35, \field property value 35
+       \type real
+  N36, \field property value 36
+       \type real
+  N37, \field property value 37
+       \type real
+  N38, \field property value 38
+       \type real
+  N39, \field property value 39
+       \type real
+  N40, \field property value 40
+       \type real
+  N41, \field property value 41
+       \type real
+  N42, \field property value 42
+       \type real
+  N43, \field property value 43
+       \type real
+  N44, \field property value 44
+       \type real
+  N45, \field property value 45
+       \type real
+  N46, \field property value 46
+       \type real
+  N47, \field property value 47
+       \type real
+  N48, \field property value 48
+       \type real
+  N49, \field property value 49
+       \type real
+  N50, \field property value 50
+       \type real
+  N51, \field property value 51
+       \type real
+  N52, \field property value 52
+       \type real
+  N53, \field property value 53
+       \type real
+  N54, \field property value 54
+       \type real
+  N55, \field property value 55
+       \type real
+  N56, \field property value 56
+       \type real
+  N57, \field property value 57
+       \type real
+  N58, \field property value 58
+       \type real
+  N59, \field property value 59
+       \type real
+  N60, \field property value 60
+       \type real
+  N61, \field property value 61
+       \type real
+  N62, \field property value 62
+       \type real
+  N63, \field property value 63
+       \type real
+  N64, \field property value 64
+       \type real
+  N65, \field property value 65
+       \type real
+  N66, \field property value 66
+       \type real
+  N67, \field property value 67
+       \type real
+  N68, \field property value 68
+       \type real
+  N69, \field property value 69
+       \type real
+  N70, \field property value 70
+       \type real
+  N71, \field property value 71
+       \type real
+  N72, \field property value 72
+       \type real
+  N73, \field property value 73
+       \type real
+  N74, \field property value 74
+       \type real
+  N75, \field property value 75
+       \type real
+  N76, \field property value 76
+       \type real
+  N77, \field property value 77
+       \type real
+  N78, \field property value 78
+       \type real
+  N79, \field property value 79
+       \type real
+  N80, \field property value 80
+       \type real
+  N81, \field property value 81
+       \type real
+  N82, \field property value 82
+       \type real
+  N83, \field property value 83
+       \type real
+  N84, \field property value 84
+       \type real
+  N85, \field property value 85
+       \type real
+  N86, \field property value 86
+       \type real
+  N87, \field property value 87
+       \type real
+  N88, \field property value 88
+       \type real
+  N89, \field property value 89
+       \type real
+  N90, \field property value 90
+       \type real
+  N91, \field property value 91
+       \type real
+  N92, \field property value 92
+       \type real
+  N93, \field property value 93
+       \type real
+  N94, \field property value 94
+       \type real
+  N95, \field property value 95
+       \type real
+  N96, \field property value 96
+       \type real
+  N97, \field property value 97
+       \type real
+  N98, \field property value 98
+       \type real
+  N99, \field property value 99
+       \type real
+  N100, \field property value 100
+        \type real
+  N101, \field property value 101
+        \type real
+  N102, \field property value 102
+        \type real
+  N103, \field property value 103
+        \type real
+  N104, \field property value 104
+        \type real
+  N105, \field property value 105
+        \type real
+  N106, \field property value 106
+        \type real
+  N107, \field property value 107
+        \type real
+  N108, \field property value 108
+        \type real
+  N109, \field property value 109
+        \type real
+  N110, \field property value 110
+        \type real
+  N111, \field property value 111
+        \type real
+  N112, \field property value 112
+        \type real
+  N113, \field property value 113
+        \type real
+  N114, \field property value 114
+        \type real
+  N115, \field property value 115
+        \type real
+  N116, \field property value 116
+        \type real
+  N117, \field property value 117
+        \type real
+  N118, \field property value 118
+        \type real
+  N119, \field property value 119
+        \type real
+  N120, \field property value 120
+        \type real
+  N121, \field property value 121
+        \type real
+  N122, \field property value 122
+        \type real
+  N123, \field property value 123
+        \type real
+  N124, \field property value 124
+        \type real
+  N125, \field property value 125
+        \type real
+  N126, \field property value 126
+        \type real
+  N127, \field property value 127
+        \type real
+  N128, \field property value 128
+        \type real
+  N129, \field property value 129
+        \type real
+  N130, \field property value 130
+        \type real
+  N131, \field property value 131
+        \type real
+  N132, \field property value 132
+        \type real
+  N133, \field property value 133
+        \type real
+  N134, \field property value 134
+        \type real
+  N135, \field property value 135
+        \type real
+  N136, \field property value 136
+        \type real
+  N137, \field property value 137
+        \type real
+  N138, \field property value 138
+        \type real
+  N139, \field property value 139
+        \type real
+  N140, \field property value 140
+        \type real
+  N141, \field property value 141
+        \type real
+  N142, \field property value 142
+        \type real
+  N143, \field property value 143
+        \type real
+  N144, \field property value 144
+        \type real
+  N145, \field property value 145
+        \type real
+  N146, \field property value 146
+        \type real
+  N147, \field property value 147
+        \type real
+  N148, \field property value 148
+        \type real
+  N149, \field property value 149
+        \type real
+  N150, \field property value 150
+        \type real
+  N151, \field property value 151
+        \type real
+  N152, \field property value 152
+        \type real
+  N153, \field property value 153
+        \type real
+  N154, \field property value 154
+        \type real
+  N155, \field property value 155
+        \type real
+  N156, \field property value 156
+        \type real
+  N157, \field property value 157
+        \type real
+  N158, \field property value 158
+        \type real
+  N159, \field property value 159
+        \type real
+  N160, \field property value 160
+        \type real
+  N161, \field property value 161
+        \type real
+  N162, \field property value 162
+        \type real
+  N163, \field property value 163
+        \type real
+  N164, \field property value 164
+        \type real
+  N165, \field property value 165
+        \type real
+  N166, \field property value 166
+        \type real
+  N167, \field property value 167
+        \type real
+  N168, \field property value 168
+        \type real
+  N169, \field property value 169
+        \type real
+  N170, \field property value 170
+        \type real
+  N171, \field property value 171
+        \type real
+  N172, \field property value 172
+        \type real
+  N173, \field property value 173
+        \type real
+  N174, \field property value 174
+        \type real
+  N175, \field property value 175
+        \type real
+  N176, \field property value 176
+        \type real
+  N177, \field property value 177
+        \type real
+  N178, \field property value 178
+        \type real
+  N179, \field property value 179
+        \type real
+  N180, \field property value 180
+        \type real
+  N181, \field property value 181
+        \type real
+  N182, \field property value 182
+        \type real
+  N183, \field property value 183
+        \type real
+  N184, \field property value 184
+        \type real
+  N185, \field property value 185
+        \type real
+  N186, \field property value 186
+        \type real
+  N187, \field property value 187
+        \type real
+  N188, \field property value 188
+        \type real
+  N189, \field property value 189
+        \type real
+  N190, \field property value 190
+        \type real
+  N191, \field property value 191
+        \type real
+  N192, \field property value 192
+        \type real
+  N193, \field property value 193
+        \type real
+  N194, \field property value 194
+        \type real
+  N195, \field property value 195
+        \type real
+  N196, \field property value 196
+        \type real
+  N197, \field property value 197
+        \type real
+  N198, \field property value 198
+        \type real
+  N199, \field property value 199
+        \type real
+  N200, \field property value 200
+        \type real
+  N201, \field property value 201
+        \type real
+  N202, \field property value 202
+        \type real
+  N203, \field property value 203
+        \type real
+  N204, \field property value 204
+        \type real
+  N205, \field property value 205
+        \type real
+  N206, \field property value 206
+        \type real
+  N207, \field property value 207
+        \type real
+  N208, \field property value 208
+        \type real
+  N209, \field property value 209
+        \type real
+  N210, \field property value 210
+        \type real
+  N211, \field property value 211
+        \type real
+  N212, \field property value 212
+        \type real
+  N213, \field property value 213
+        \type real
+  N214, \field property value 214
+        \type real
+  N215, \field property value 215
+        \type real
+  N216, \field property value 216
+        \type real
+  N217, \field property value 217
+        \type real
+
+  N218, \field property value 218
+        \type real
+  N219, \field property value 219
+        \type real
+  N220, \field property value 220
+        \type real
+  N221, \field property value 221
+        \type real
+  N222, \field property value 222
+        \type real
+  N223, \field property value 223
+        \type real
+  N224, \field property value 224
+        \type real
+  N225, \field property value 225
+        \type real
+  N226, \field property value 226
+        \type real
+  N227, \field property value 227
+        \type real
+  N228, \field property value 228
+        \type real
+  N229, \field property value 229
+        \type real
+  N230, \field property value 230
+        \type real
+  N231, \field property value 231
+        \type real
+  N232, \field property value 232
+        \type real
+  N233, \field property value 233
+        \type real
+  N234, \field property value 234
+        \type real
+  N235, \field property value 235
+        \type real
+  N236, \field property value 236
+        \type real
+  N237, \field property value 237
+        \type real
+  N238, \field property value 238
+        \type real
+  N239, \field property value 239
+        \type real
+  N240, \field property value 240
+        \type real
+  N241, \field property value 241
+        \type real
+  N242, \field property value 242
+        \type real
+  N243, \field property value 243
+        \type real
+  N244, \field property value 244
+        \type real
+  N245, \field property value 245
+        \type real
+  N246, \field property value 246
+        \type real
+  N247, \field property value 247
+        \type real
+  N248, \field property value 248
+        \type real
+  N249, \field property value 249
+        \type real
+  N250; \field property value 250
+        \type real
+
+
+FluidPropertySuperheated,
+      \memo fluid properties for the superheated region
+  A1, \field fluid name (R11, R12, etc.)
+      \reference FluidNames
+  A2, \field fluid property type
+      \note ENTHALPY Units are J\kg
+      \note DENSITY Units are kg\m3
+      \note SPECIFICHEAT Units are J\kg-K (Currently this data is not used, entered, or expected)
+      \type choice
+      \key ENTHALPY     ! Units are J\kg
+      \key DENSITY      ! Units are kg\m3
+      \key SPECIFICHEAT ! Units are J\kg-K (Currently this data is not used, entered, or expected)
+  A3, \field temperatures list name
+      \reference FluidPropertyTemperatures
+  N1, \field pressure
+      \note pressure for this list of properties
+      \type real
+      \units Pa
+      \minimum> 0.0
+  N2, \field property value 1
+      \type real
+  N3, \field property value 2
+      \type real
+  N4, \field property value 3
+      \type real
+  N5, \field property value 4
+      \type real
+  N6, \field property value 5
+      \type real
+  N7, \field property value 6
+      \type real
+  N8, \field property value 7
+      \type real
+  N9, \field property value 8
+      \type real
+  N10, \field property value 9
+       \type real
+  N11, \field property value 10
+       \type real
+  N12, \field property value 11
+       \type real
+  N13, \field property value 12
+       \type real
+  N14, \field property value 13
+       \type real
+  N15, \field property value 14
+       \type real
+  N16, \field property value 15
+       \type real
+  N17, \field property value 16
+       \type real
+  N18, \field property value 17
+       \type real
+  N19, \field property value 18
+       \type real
+  N20, \field property value 19
+       \type real
+  N21, \field property value 20
+       \type real
+  N22, \field property value 21
+       \type real
+  N23, \field property value 22
+       \type real
+  N24, \field property value 23
+       \type real
+  N25, \field property value 24
+       \type real
+  N26, \field property value 25
+       \type real
+  N27, \field property value 26
+       \type real
+  N28, \field property value 27
+       \type real
+  N29, \field property value 28
+       \type real
+  N30, \field property value 29
+       \type real
+  N31, \field property value 30
+       \type real
+  N32, \field property value 31
+       \type real
+  N33, \field property value 32
+       \type real
+  N34, \field property value 33
+       \type real
+  N35, \field property value 34
+       \type real
+  N36, \field property value 35
+       \type real
+  N37, \field property value 36
+       \type real
+  N38, \field property value 37
+       \type real
+  N39, \field property value 38
+       \type real
+  N40, \field property value 39
+       \type real
+  N41, \field property value 40
+       \type real
+  N42, \field property value 41
+       \type real
+  N43, \field property value 42
+       \type real
+  N44, \field property value 43
+       \type real
+  N45, \field property value 44
+       \type real
+  N46, \field property value 45
+       \type real
+  N47, \field property value 46
+       \type real
+  N48, \field property value 47
+       \type real
+  N49, \field property value 48
+       \type real
+  N50, \field property value 49
+       \type real
+  N51, \field property value 50
+       \type real
+  N52, \field property value 51
+       \type real
+  N53, \field property value 52
+       \type real
+  N54, \field property value 53
+       \type real
+  N55, \field property value 54
+       \type real
+  N56, \field property value 55
+       \type real
+  N57, \field property value 56
+       \type real
+  N58, \field property value 57
+       \type real
+  N59, \field property value 58
+       \type real
+  N60, \field property value 59
+       \type real
+  N61, \field property value 60
+       \type real
+  N62, \field property value 61
+       \type real
+  N63, \field property value 62
+       \type real
+  N64, \field property value 63
+       \type real
+  N65, \field property value 64
+       \type real
+  N66, \field property value 65
+       \type real
+  N67, \field property value 66
+       \type real
+  N68, \field property value 67
+       \type real
+  N69, \field property value 68
+       \type real
+  N70, \field property value 69
+       \type real
+  N71, \field property value 70
+       \type real
+  N72, \field property value 71
+       \type real
+  N73, \field property value 72
+       \type real
+  N74, \field property value 73
+       \type real
+  N75, \field property value 74
+       \type real
+  N76, \field property value 75
+       \type real
+  N77, \field property value 76
+       \type real
+  N78, \field property value 77
+       \type real
+  N79, \field property value 78
+       \type real
+  N80, \field property value 79
+       \type real
+  N81, \field property value 80
+       \type real
+  N82, \field property value 81
+       \type real
+  N83, \field property value 82
+       \type real
+  N84, \field property value 83
+       \type real
+  N85, \field property value 84
+       \type real
+  N86, \field property value 85
+       \type real
+  N87, \field property value 86
+       \type real
+  N88, \field property value 87
+       \type real
+  N89, \field property value 88
+       \type real
+  N90, \field property value 89
+       \type real
+  N91, \field property value 90
+       \type real
+  N92, \field property value 91
+       \type real
+  N93, \field property value 92
+       \type real
+  N94, \field property value 93
+       \type real
+  N95, \field property value 94
+       \type real
+  N96, \field property value 95
+       \type real
+  N97, \field property value 96
+       \type real
+  N98, \field property value 97
+       \type real
+  N99, \field property value 98
+       \type real
+  N100, \field property value 99
+        \type real
+  N101, \field property value 100
+        \type real
+  N102, \field property value 101
+        \type real
+  N103, \field property value 102
+        \type real
+  N104, \field property value 103
+        \type real
+  N105, \field property value 104
+        \type real
+  N106, \field property value 105
+        \type real
+  N107, \field property value 106
+        \type real
+  N108, \field property value 107
+        \type real
+  N109, \field property value 108
+        \type real
+  N110, \field property value 109
+        \type real
+  N111, \field property value 110
+        \type real
+  N112, \field property value 111
+        \type real
+  N113, \field property value 112
+        \type real
+  N114, \field property value 113
+        \type real
+  N115, \field property value 114
+        \type real
+  N116, \field property value 115
+        \type real
+  N117, \field property value 116
+        \type real
+  N118, \field property value 117
+        \type real
+  N119, \field property value 118
+        \type real
+  N120, \field property value 119
+        \type real
+  N121, \field property value 120
+        \type real
+  N122, \field property value 121
+        \type real
+  N123, \field property value 122
+        \type real
+  N124, \field property value 123
+        \type real
+  N125, \field property value 124
+        \type real
+  N126, \field property value 125
+        \type real
+  N127, \field property value 126
+        \type real
+  N128, \field property value 127
+        \type real
+  N129, \field property value 128
+        \type real
+  N130, \field property value 129
+        \type real
+  N131, \field property value 130
+        \type real
+  N132, \field property value 131
+        \type real
+  N133, \field property value 132
+        \type real
+  N134, \field property value 133
+        \type real
+  N135, \field property value 134
+        \type real
+  N136, \field property value 135
+        \type real
+  N137, \field property value 136
+        \type real
+  N138, \field property value 137
+        \type real
+  N139, \field property value 138
+        \type real
+  N140, \field property value 139
+        \type real
+  N141, \field property value 140
+        \type real
+  N142, \field property value 141
+        \type real
+  N143, \field property value 142
+        \type real
+  N144, \field property value 143
+        \type real
+  N145, \field property value 144
+        \type real
+  N146, \field property value 145
+        \type real
+  N147, \field property value 146
+        \type real
+  N148, \field property value 147
+        \type real
+  N149, \field property value 148
+        \type real
+  N150, \field property value 149
+        \type real
+  N151, \field property value 150
+        \type real
+  N152, \field property value 151
+        \type real
+  N153, \field property value 152
+        \type real
+  N154, \field property value 153
+        \type real
+  N155, \field property value 154
+        \type real
+  N156, \field property value 155
+        \type real
+  N157, \field property value 156
+        \type real
+  N158, \field property value 157
+        \type real
+  N159, \field property value 158
+        \type real
+  N160, \field property value 159
+        \type real
+  N161, \field property value 160
+        \type real
+  N162, \field property value 161
+        \type real
+  N163, \field property value 162
+        \type real
+  N164, \field property value 163
+        \type real
+  N165, \field property value 164
+        \type real
+  N166, \field property value 165
+        \type real
+  N167, \field property value 166
+        \type real
+  N168, \field property value 167
+        \type real
+  N169, \field property value 168
+        \type real
+  N170, \field property value 169
+        \type real
+  N171, \field property value 170
+        \type real
+  N172, \field property value 171
+        \type real
+  N173, \field property value 172
+        \type real
+  N174, \field property value 173
+        \type real
+  N175, \field property value 174
+        \type real
+  N176, \field property value 175
+        \type real
+  N177, \field property value 176
+        \type real
+  N178, \field property value 177
+        \type real
+  N179, \field property value 178
+        \type real
+  N180, \field property value 179
+        \type real
+  N181, \field property value 180
+        \type real
+  N182, \field property value 181
+        \type real
+  N183, \field property value 182
+        \type real
+  N184, \field property value 183
+        \type real
+  N185, \field property value 184
+        \type real
+  N186, \field property value 185
+        \type real
+  N187, \field property value 186
+        \type real
+  N188, \field property value 187
+        \type real
+  N189, \field property value 188
+        \type real
+  N190, \field property value 189
+        \type real
+  N191, \field property value 190
+        \type real
+  N192, \field property value 191
+        \type real
+  N193, \field property value 192
+        \type real
+  N194, \field property value 193
+        \type real
+  N195, \field property value 194
+        \type real
+  N196, \field property value 195
+        \type real
+  N197, \field property value 196
+        \type real
+  N198, \field property value 197
+        \type real
+  N199, \field property value 198
+        \type real
+  N200, \field property value 199
+        \type real
+  N201, \field property value 200
+        \type real
+  N202, \field property value 201
+        \type real
+  N203, \field property value 202
+        \type real
+  N204, \field property value 203
+        \type real
+  N205, \field property value 204
+        \type real
+  N206, \field property value 205
+        \type real
+  N207, \field property value 206
+        \type real
+  N208, \field property value 207
+        \type real
+  N209, \field property value 208
+        \type real
+  N210, \field property value 209
+        \type real
+  N211, \field property value 210
+        \type real
+  N212, \field property value 211
+        \type real
+  N213, \field property value 212
+        \type real
+  N214, \field property value 213
+        \type real
+  N215, \field property value 214
+        \type real
+  N216, \field property value 215
+        \type real
+  N217, \field property value 216
+        \type real
+  N218, \field property value 217
+        \type real
+  N219, \field property value 218
+        \type real
+  N220, \field property value 219
+        \type real
+  N221, \field property value 220
+        \type real
+  N222, \field property value 221
+        \type real
+  N223, \field property value 222
+        \type real
+  N224, \field property value 223
+        \type real
+  N225, \field property value 224
+        \type real
+  N226, \field property value 225
+        \type real
+  N227, \field property value 226
+        \type real
+  N228, \field property value 227
+        \type real
+  N229, \field property value 228
+        \type real
+  N230, \field property value 229
+        \type real
+  N231, \field property value 230
+        \type real
+  N232, \field property value 231
+        \type real
+  N233, \field property value 232
+        \type real
+  N234, \field property value 233
+        \type real
+  N235, \field property value 234
+        \type real
+  N236, \field property value 235
+        \type real
+  N237, \field property value 236
+        \type real
+  N238, \field property value 237
+        \type real
+  N239, \field property value 238
+        \type real
+  N240, \field property value 239
+        \type real
+  N241, \field property value 240
+        \type real
+  N242, \field property value 241
+        \type real
+  N243, \field property value 242
+        \type real
+  N244, \field property value 243
+        \type real
+  N245, \field property value 244
+        \type real
+  N246, \field property value 245
+        \type real
+  N247, \field property value 246
+        \type real
+  N248, \field property value 247
+        \type real
+  N249, \field property value 248
+        \type real
+  N250, \field property value 249
+        \type real
+  N251; \field property value 250
+        \type real
+
+FluidPropertySubcooled,
+      \memo fluid properties for the superheated region
+  A1, \field fluid name (R11, R12, etc.)
+      \reference FluidNames
+  A2, \field fluid property type
+      \note ENTHALPY Units are J\kg
+      \note DENSITY Units are kg\m3
+      \note SPECIFICHEAT Units are J\kg-K (Currently this data is not used, entered, or expected)
+      \type choice
+      \key ENTHALPY     ! Units are J\kg
+      \key DENSITY      ! Units are kg\m3
+      \key SPECIFICHEAT ! Units are J\kg-K (Currently this data is not used, entered, or expected)
+  A3, \field temperatures list name
+      \reference FluidPropertyTemperatures
+  N1, \field pressure
+      \note pressure for this list of properties
+      \type real
+      \units Pa
+      \minimum> 0.0
+  N2, \field property value 1
+      \type real
+  N3, \field property value 2
+      \type real
+  N4, \field property value 3
+      \type real
+  N5, \field property value 4
+      \type real
+  N6, \field property value 5
+      \type real
+  N7, \field property value 6
+      \type real
+  N8, \field property value 7
+      \type real
+  N9, \field property value 8
+      \type real
+  N10, \field property value 9
+       \type real
+  N11, \field property value 10
+       \type real
+  N12, \field property value 11
+       \type real
+  N13, \field property value 12
+       \type real
+  N14, \field property value 13
+       \type real
+  N15, \field property value 14
+       \type real
+  N16, \field property value 15
+       \type real
+  N17, \field property value 16
+       \type real
+  N18, \field property value 17
+       \type real
+  N19, \field property value 18
+       \type real
+  N20, \field property value 19
+       \type real
+  N21, \field property value 20
+       \type real
+  N22, \field property value 21
+       \type real
+  N23, \field property value 22
+       \type real
+  N24, \field property value 23
+       \type real
+  N25, \field property value 24
+       \type real
+  N26, \field property value 25
+       \type real
+  N27, \field property value 26
+       \type real
+  N28, \field property value 27
+       \type real
+  N29, \field property value 28
+       \type real
+  N30, \field property value 29
+       \type real
+  N31, \field property value 30
+       \type real
+  N32, \field property value 31
+       \type real
+  N33, \field property value 32
+       \type real
+  N34, \field property value 33
+       \type real
+  N35, \field property value 34
+       \type real
+  N36, \field property value 35
+       \type real
+  N37, \field property value 36
+       \type real
+  N38, \field property value 37
+       \type real
+  N39, \field property value 38
+       \type real
+  N40, \field property value 39
+       \type real
+  N41, \field property value 40
+       \type real
+  N42, \field property value 41
+       \type real
+  N43, \field property value 42
+       \type real
+  N44, \field property value 43
+       \type real
+  N45, \field property value 44
+       \type real
+  N46, \field property value 45
+       \type real
+  N47, \field property value 46
+       \type real
+  N48, \field property value 47
+       \type real
+  N49, \field property value 48
+       \type real
+  N50, \field property value 49
+       \type real
+  N51, \field property value 50
+       \type real
+  N52, \field property value 51
+       \type real
+  N53, \field property value 52
+       \type real
+  N54, \field property value 53
+       \type real
+  N55, \field property value 54
+       \type real
+  N56, \field property value 55
+       \type real
+  N57, \field property value 56
+       \type real
+  N58, \field property value 57
+       \type real
+  N59, \field property value 58
+       \type real
+  N60, \field property value 59
+       \type real
+  N61, \field property value 60
+       \type real
+  N62, \field property value 61
+       \type real
+  N63, \field property value 62
+       \type real
+  N64, \field property value 63
+       \type real
+  N65, \field property value 64
+       \type real
+  N66, \field property value 65
+       \type real
+  N67, \field property value 66
+       \type real
+  N68, \field property value 67
+       \type real
+  N69, \field property value 68
+       \type real
+  N70, \field property value 69
+       \type real
+  N71, \field property value 70
+       \type real
+  N72, \field property value 71
+       \type real
+  N73, \field property value 72
+       \type real
+  N74, \field property value 73
+       \type real
+  N75, \field property value 74
+       \type real
+  N76, \field property value 75
+       \type real
+  N77, \field property value 76
+       \type real
+  N78, \field property value 77
+       \type real
+  N79, \field property value 78
+       \type real
+  N80, \field property value 79
+       \type real
+  N81, \field property value 80
+       \type real
+  N82, \field property value 81
+       \type real
+  N83, \field property value 82
+       \type real
+  N84, \field property value 83
+       \type real
+  N85, \field property value 84
+       \type real
+  N86, \field property value 85
+       \type real
+  N87, \field property value 86
+       \type real
+  N88, \field property value 87
+       \type real
+  N89, \field property value 88
+       \type real
+  N90, \field property value 89
+       \type real
+  N91, \field property value 90
+       \type real
+  N92, \field property value 91
+       \type real
+  N93, \field property value 92
+       \type real
+  N94, \field property value 93
+       \type real
+  N95, \field property value 94
+       \type real
+  N96, \field property value 95
+       \type real
+  N97, \field property value 96
+       \type real
+  N98, \field property value 97
+       \type real
+  N99, \field property value 98
+       \type real
+  N100, \field property value 99
+        \type real
+  N101, \field property value 100
+        \type real
+  N102, \field property value 101
+        \type real
+  N103, \field property value 102
+        \type real
+  N104, \field property value 103
+        \type real
+  N105, \field property value 104
+        \type real
+  N106, \field property value 105
+        \type real
+  N107, \field property value 106
+        \type real
+  N108, \field property value 107
+        \type real
+  N109, \field property value 108
+        \type real
+  N110, \field property value 109
+        \type real
+  N111, \field property value 110
+        \type real
+  N112, \field property value 111
+        \type real
+  N113, \field property value 112
+        \type real
+  N114, \field property value 113
+        \type real
+  N115, \field property value 114
+        \type real
+  N116, \field property value 115
+        \type real
+  N117, \field property value 116
+        \type real
+  N118, \field property value 117
+        \type real
+  N119, \field property value 118
+        \type real
+  N120, \field property value 119
+        \type real
+  N121, \field property value 120
+        \type real
+  N122, \field property value 121
+        \type real
+  N123, \field property value 122
+        \type real
+  N124, \field property value 123
+        \type real
+  N125, \field property value 124
+        \type real
+  N126, \field property value 125
+        \type real
+  N127, \field property value 126
+        \type real
+  N128, \field property value 127
+        \type real
+  N129, \field property value 128
+        \type real
+  N130, \field property value 129
+        \type real
+  N131, \field property value 130
+        \type real
+  N132, \field property value 131
+        \type real
+  N133, \field property value 132
+        \type real
+  N134, \field property value 133
+        \type real
+  N135, \field property value 134
+        \type real
+  N136, \field property value 135
+        \type real
+  N137, \field property value 136
+        \type real
+  N138, \field property value 137
+        \type real
+  N139, \field property value 138
+        \type real
+  N140, \field property value 139
+        \type real
+  N141, \field property value 140
+        \type real
+  N142, \field property value 141
+        \type real
+  N143, \field property value 142
+        \type real
+  N144, \field property value 143
+        \type real
+  N145, \field property value 144
+        \type real
+  N146, \field property value 145
+        \type real
+  N147, \field property value 146
+        \type real
+  N148, \field property value 147
+        \type real
+  N149, \field property value 148
+        \type real
+  N150, \field property value 149
+        \type real
+  N151, \field property value 150
+        \type real
+  N152, \field property value 151
+        \type real
+  N153, \field property value 152
+        \type real
+  N154, \field property value 153
+        \type real
+  N155, \field property value 154
+        \type real
+  N156, \field property value 155
+        \type real
+  N157, \field property value 156
+        \type real
+  N158, \field property value 157
+        \type real
+  N159, \field property value 158
+        \type real
+  N160, \field property value 159
+        \type real
+  N161, \field property value 160
+        \type real
+  N162, \field property value 161
+        \type real
+  N163, \field property value 162
+        \type real
+  N164, \field property value 163
+        \type real
+  N165, \field property value 164
+        \type real
+  N166, \field property value 165
+        \type real
+  N167, \field property value 166
+        \type real
+  N168, \field property value 167
+        \type real
+  N169, \field property value 168
+        \type real
+  N170, \field property value 169
+        \type real
+  N171, \field property value 170
+        \type real
+  N172, \field property value 171
+        \type real
+  N173, \field property value 172
+        \type real
+  N174, \field property value 173
+        \type real
+  N175, \field property value 174
+        \type real
+  N176, \field property value 175
+        \type real
+  N177, \field property value 176
+        \type real
+  N178, \field property value 177
+        \type real
+  N179, \field property value 178
+        \type real
+  N180, \field property value 179
+        \type real
+  N181, \field property value 180
+        \type real
+  N182, \field property value 181
+        \type real
+  N183, \field property value 182
+        \type real
+  N184, \field property value 183
+        \type real
+  N185, \field property value 184
+        \type real
+  N186, \field property value 185
+        \type real
+  N187, \field property value 186
+        \type real
+  N188, \field property value 187
+        \type real
+  N189, \field property value 188
+        \type real
+  N190, \field property value 189
+        \type real
+  N191, \field property value 190
+        \type real
+  N192, \field property value 191
+        \type real
+  N193, \field property value 192
+        \type real
+  N194, \field property value 193
+        \type real
+  N195, \field property value 194
+        \type real
+  N196, \field property value 195
+        \type real
+  N197, \field property value 196
+        \type real
+  N198, \field property value 197
+        \type real
+  N199, \field property value 198
+        \type real
+  N200, \field property value 199
+        \type real
+  N201, \field property value 200
+        \type real
+  N202, \field property value 201
+        \type real
+  N203, \field property value 202
+        \type real
+  N204, \field property value 203
+        \type real
+  N205, \field property value 204
+        \type real
+  N206, \field property value 205
+        \type real
+  N207, \field property value 206
+        \type real
+  N208, \field property value 207
+        \type real
+  N209, \field property value 208
+        \type real
+  N210, \field property value 209
+        \type real
+  N211, \field property value 210
+        \type real
+  N212, \field property value 211
+        \type real
+  N213, \field property value 212
+        \type real
+  N214, \field property value 213
+        \type real
+  N215, \field property value 214
+        \type real
+  N216, \field property value 215
+        \type real
+  N217, \field property value 216
+        \type real
+  N218, \field property value 217
+        \type real
+  N219, \field property value 218
+        \type real
+  N220, \field property value 219
+        \type real
+  N221, \field property value 220
+        \type real
+  N222, \field property value 221
+        \type real
+  N223, \field property value 222
+        \type real
+  N224, \field property value 223
+        \type real
+  N225, \field property value 224
+        \type real
+  N226, \field property value 225
+        \type real
+  N227, \field property value 226
+        \type real
+  N228, \field property value 227
+        \type real
+  N229, \field property value 228
+        \type real
+  N230, \field property value 229
+        \type real
+  N231, \field property value 230
+        \type real
+  N232, \field property value 231
+        \type real
+  N233, \field property value 232
+        \type real
+  N234, \field property value 233
+        \type real
+  N235, \field property value 234
+        \type real
+  N236, \field property value 235
+        \type real
+  N237, \field property value 236
+        \type real
+  N238, \field property value 237
+        \type real
+  N239, \field property value 238
+        \type real
+  N240, \field property value 239
+        \type real
+  N241, \field property value 240
+        \type real
+  N242, \field property value 241
+        \type real
+  N243, \field property value 242
+        \type real
+  N244, \field property value 243
+        \type real
+  N245, \field property value 244
+        \type real
+  N246, \field property value 245
+        \type real
+  N247, \field property value 246
+        \type real
+  N248, \field property value 247
+        \type real
+  N249, \field property value 248
+        \type real
+  N250, \field property value 249
+        \type real
+  N251; \field property value 250
+        \type real
+
+FluidPropertyConcentration,
+      \memo fluid properties for water\other fluid mixtures
+  A1, \field fluid name (ethylene glycol, etc.)
+      \reference FluidNames
+  A2, \field fluid property type
+      \note ENTHALPY Units are J\kg (Currently this data is not used, entered, or expected)
+      \note DENSITY Units are kg\m3 (Currently this data is not used, entered, or expected)
+      \note SPECIFICHEAT Units are J\kg-K
+      \type choice
+      \key ENTHALPY     ! Units are J\kg  (Currently this data is not used, entered, or expected)
+      \key DENSITY      ! Units are kg\m3 (Currently this data is not used, entered, or expected)
+      \key SPECIFICHEAT ! Units are J\kg-K
+  A3, \field temperatures list name
+      \reference FluidPropertyTemperatures
+  N1, \field concentration
+      \note glycol concentration for this list of properties
+      \type real
+      \units percentage (as a real decimal)
+      \minimum 0.0
+      \maximum 1.0
+  N2, \field property value 1
+      \type real
+  N3, \field property value 2
+      \type real
+  N4, \field property value 3
+      \type real
+  N5, \field property value 4
+      \type real
+  N6, \field property value 5
+      \type real
+  N7, \field property value 6
+      \type real
+  N8, \field property value 7
+      \type real
+  N9, \field property value 8
+      \type real
+  N10, \field property value 9
+       \type real
+  N11, \field property value 10
+       \type real
+  N12, \field property value 11
+       \type real
+  N13, \field property value 12
+       \type real
+  N14, \field property value 13
+       \type real
+  N15, \field property value 14
+       \type real
+  N16, \field property value 15
+       \type real
+  N17, \field property value 16
+       \type real
+  N18, \field property value 17
+       \type real
+  N19, \field property value 18
+       \type real
+  N20, \field property value 19
+       \type real
+  N21, \field property value 20
+       \type real
+  N22, \field property value 21
+       \type real
+  N23, \field property value 22
+       \type real
+  N24, \field property value 23
+       \type real
+  N25, \field property value 24
+       \type real
+  N26, \field property value 25
+       \type real
+  N27, \field property value 26
+       \type real
+  N28, \field property value 27
+       \type real
+  N29, \field property value 28
+       \type real
+  N30, \field property value 29
+       \type real
+  N31, \field property value 30
+       \type real
+  N32, \field property value 31
+       \type real
+  N33, \field property value 32
+       \type real
+  N34, \field property value 33
+       \type real
+  N35, \field property value 34
+       \type real
+  N36, \field property value 35
+       \type real
+  N37, \field property value 36
+       \type real
+  N38, \field property value 37
+       \type real
+  N39, \field property value 38
+       \type real
+  N40, \field property value 39
+       \type real
+  N41, \field property value 40
+       \type real
+  N42, \field property value 41
+       \type real
+  N43, \field property value 42
+       \type real
+  N44, \field property value 43
+       \type real
+  N45, \field property value 44
+       \type real
+  N46, \field property value 45
+       \type real
+  N47, \field property value 46
+       \type real
+  N48, \field property value 47
+       \type real
+  N49, \field property value 48
+       \type real
+  N50, \field property value 49
+       \type real
+  N51, \field property value 50
+       \type real
+  N52, \field property value 51
+       \type real
+  N53, \field property value 52
+       \type real
+  N54, \field property value 53
+       \type real
+  N55, \field property value 54
+       \type real
+  N56, \field property value 55
+       \type real
+  N57, \field property value 56
+       \type real
+  N58, \field property value 57
+       \type real
+  N59, \field property value 58
+       \type real
+  N60, \field property value 59
+       \type real
+  N61, \field property value 60
+       \type real
+  N62, \field property value 61
+       \type real
+  N63, \field property value 62
+       \type real
+  N64, \field property value 63
+       \type real
+  N65, \field property value 64
+       \type real
+  N66, \field property value 65
+       \type real
+  N67, \field property value 66
+       \type real
+  N68, \field property value 67
+       \type real
+  N69, \field property value 68
+       \type real
+  N70, \field property value 69
+       \type real
+  N71, \field property value 70
+       \type real
+  N72, \field property value 71
+       \type real
+  N73, \field property value 72
+       \type real
+  N74, \field property value 73
+       \type real
+  N75, \field property value 74
+       \type real
+  N76, \field property value 75
+       \type real
+  N77, \field property value 76
+       \type real
+  N78, \field property value 77
+       \type real
+  N79, \field property value 78
+       \type real
+  N80, \field property value 79
+       \type real
+  N81, \field property value 80
+       \type real
+  N82, \field property value 81
+       \type real
+  N83, \field property value 82
+       \type real
+  N84, \field property value 83
+       \type real
+  N85, \field property value 84
+       \type real
+  N86, \field property value 85
+       \type real
+  N87, \field property value 86
+       \type real
+  N88, \field property value 87
+       \type real
+  N89, \field property value 88
+       \type real
+  N90, \field property value 89
+       \type real
+  N91, \field property value 90
+       \type real
+  N92, \field property value 91
+       \type real
+  N93, \field property value 92
+       \type real
+  N94, \field property value 93
+       \type real
+  N95, \field property value 94
+       \type real
+  N96, \field property value 95
+       \type real
+  N97, \field property value 96
+       \type real
+  N98, \field property value 97
+       \type real
+  N99, \field property value 98
+       \type real
+  N100, \field property value 99
+        \type real
+  N101, \field property value 100
+        \type real
+  N102, \field property value 101
+        \type real
+  N103, \field property value 102
+        \type real
+  N104, \field property value 103
+        \type real
+  N105, \field property value 104
+        \type real
+  N106, \field property value 105
+        \type real
+  N107, \field property value 106
+        \type real
+  N108, \field property value 107
+        \type real
+  N109, \field property value 108
+        \type real
+  N110, \field property value 109
+        \type real
+  N111, \field property value 110
+        \type real
+  N112, \field property value 111
+        \type real
+  N113, \field property value 112
+        \type real
+  N114, \field property value 113
+        \type real
+  N115, \field property value 114
+        \type real
+  N116, \field property value 115
+        \type real
+  N117, \field property value 116
+        \type real
+  N118, \field property value 117
+        \type real
+  N119, \field property value 118
+        \type real
+  N120, \field property value 119
+        \type real
+  N121, \field property value 120
+        \type real
+  N122, \field property value 121
+        \type real
+  N123, \field property value 122
+        \type real
+  N124, \field property value 123
+        \type real
+  N125, \field property value 124
+        \type real
+  N126, \field property value 125
+        \type real
+  N127, \field property value 126
+        \type real
+  N128, \field property value 127
+        \type real
+  N129, \field property value 128
+        \type real
+  N130, \field property value 129
+        \type real
+  N131, \field property value 130
+        \type real
+  N132, \field property value 131
+        \type real
+  N133, \field property value 132
+        \type real
+  N134, \field property value 133
+        \type real
+  N135, \field property value 134
+        \type real
+  N136, \field property value 135
+        \type real
+  N137, \field property value 136
+        \type real
+  N138, \field property value 137
+        \type real
+  N139, \field property value 138
+        \type real
+  N140, \field property value 139
+        \type real
+  N141, \field property value 140
+        \type real
+  N142, \field property value 141
+        \type real
+  N143, \field property value 142
+        \type real
+  N144, \field property value 143
+        \type real
+  N145, \field property value 144
+        \type real
+  N146, \field property value 145
+        \type real
+  N147, \field property value 146
+        \type real
+  N148, \field property value 147
+        \type real
+  N149, \field property value 148
+        \type real
+  N150, \field property value 149
+        \type real
+  N151, \field property value 150
+        \type real
+  N152, \field property value 151
+        \type real
+  N153, \field property value 152
+        \type real
+  N154, \field property value 153
+        \type real
+  N155, \field property value 154
+        \type real
+  N156, \field property value 155
+        \type real
+  N157, \field property value 156
+        \type real
+  N158, \field property value 157
+        \type real
+  N159, \field property value 158
+        \type real
+  N160, \field property value 159
+        \type real
+  N161, \field property value 160
+        \type real
+  N162, \field property value 161
+        \type real
+  N163, \field property value 162
+        \type real
+  N164, \field property value 163
+        \type real
+  N165, \field property value 164
+        \type real
+  N166, \field property value 165
+        \type real
+  N167, \field property value 166
+        \type real
+  N168, \field property value 167
+        \type real
+  N169, \field property value 168
+        \type real
+  N170, \field property value 169
+        \type real
+  N171, \field property value 170
+        \type real
+  N172, \field property value 171
+        \type real
+  N173, \field property value 172
+        \type real
+  N174, \field property value 173
+        \type real
+  N175, \field property value 174
+        \type real
+  N176, \field property value 175
+        \type real
+  N177, \field property value 176
+        \type real
+  N178, \field property value 177
+        \type real
+  N179, \field property value 178
+        \type real
+  N180, \field property value 179
+        \type real
+  N181, \field property value 180
+        \type real
+  N182, \field property value 181
+        \type real
+  N183, \field property value 182
+        \type real
+  N184, \field property value 183
+        \type real
+  N185, \field property value 184
+        \type real
+  N186, \field property value 185
+        \type real
+  N187, \field property value 186
+        \type real
+  N188, \field property value 187
+        \type real
+  N189, \field property value 188
+        \type real
+  N190, \field property value 189
+        \type real
+  N191, \field property value 190
+        \type real
+  N192, \field property value 191
+        \type real
+  N193, \field property value 192
+        \type real
+  N194, \field property value 193
+        \type real
+  N195, \field property value 194
+        \type real
+  N196, \field property value 195
+        \type real
+  N197, \field property value 196
+        \type real
+  N198, \field property value 197
+        \type real
+  N199, \field property value 198
+        \type real
+  N200, \field property value 199
+        \type real
+  N201, \field property value 200
+        \type real
+  N202, \field property value 201
+        \type real
+  N203, \field property value 202
+        \type real
+  N204, \field property value 203
+        \type real
+  N205, \field property value 204
+        \type real
+  N206, \field property value 205
+        \type real
+  N207, \field property value 206
+        \type real
+  N208, \field property value 207
+        \type real
+  N209, \field property value 208
+        \type real
+  N210, \field property value 209
+        \type real
+  N211, \field property value 210
+        \type real
+  N212, \field property value 211
+        \type real
+  N213, \field property value 212
+        \type real
+  N214, \field property value 213
+        \type real
+  N215, \field property value 214
+        \type real
+  N216, \field property value 215
+        \type real
+  N217, \field property value 216
+        \type real
+  N218, \field property value 217
+        \type real
+  N219, \field property value 218
+        \type real
+  N220, \field property value 219
+        \type real
+  N221, \field property value 220
+        \type real
+  N222, \field property value 221
+        \type real
+  N223, \field property value 222
+        \type real
+  N224, \field property value 223
+        \type real
+  N225, \field property value 224
+        \type real
+  N226, \field property value 225
+        \type real
+  N227, \field property value 226
+        \type real
+  N228, \field property value 227
+        \type real
+  N229, \field property value 228
+        \type real
+  N230, \field property value 229
+        \type real
+  N231, \field property value 230
+        \type real
+  N232, \field property value 231
+        \type real
+  N233, \field property value 232
+        \type real
+  N234, \field property value 233
+        \type real
+  N235, \field property value 234
+        \type real
+  N236, \field property value 235
+        \type real
+  N237, \field property value 236
+        \type real
+  N238, \field property value 237
+        \type real
+  N239, \field property value 238
+        \type real
+  N240, \field property value 239
+        \type real
+  N241, \field property value 240
+        \type real
+  N242, \field property value 241
+        \type real
+  N243, \field property value 242
+        \type real
+  N244, \field property value 243
+        \type real
+  N245, \field property value 244
+        \type real
+  N246, \field property value 245
+        \type real
+  N247, \field property value 246
+        \type real
+  N248, \field property value 247
+        \type real
+  N249, \field property value 248
+        \type real
+  N250, \field property value 249
+        \type real
+  N251; \field property value 250
+        \type real
