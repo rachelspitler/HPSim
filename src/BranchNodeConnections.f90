@@ -1188,7 +1188,12 @@ SUBROUTINE GetChildrenData(ComponentType,ComponentName,NumChildren,   &
   INTEGER ParentOutletNodeNum
 !unused1109  LOGICAL Matched
   INTEGER CountMatchLoop
-
+  
+  !RS: Added in as part of recovery effort (6/30/18)
+  INTEGER :: DebugFile       =150 !RS: Debugging file denotion, hopefully this works.
+    
+    OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging (11/1/14)
+    
   ChildrenCType=Blank
   ChildrenCName=Blank
   InletNodeName=Blank
@@ -1200,8 +1205,10 @@ SUBROUTINE GetChildrenData(ComponentType,ComponentName,NumChildren,   &
   IF (IsParentObject(ComponentType,ComponentName)) THEN
     NumChildren=GetNumChildren(ComponentType,ComponentName)
     IF (NumChildren == 0) THEN
-      CALL ShowWarningError('GetChildrenData: Parent Node has no children, node='//  &
-                   TRIM(ComponentType)//':'//TRIM(ComponentName))
+        !RS: Added in as part of recovery effort (6/30/18)
+      !CALL ShowWarningError('GetChildrenData: Parent Node has no children, node='//  &
+      !             TRIM(ComponentType)//':'//TRIM(ComponentName))  !RS: Debugging: Secret Search String (11/1/14)
+      WRITE(DebugFile,*) 'GetChildrenData: Parent Node has no children, node='//TRIM(ComponentType)//':'//TRIM(ComponentName)
     ELSE
       CALL GetParentData(ComponentType,ComponentName,ParentInletNodeName,ParentInletNodeNum,  &
                          ParentOutletNodeName,ParentOutletNodeNum,ErrInObject)

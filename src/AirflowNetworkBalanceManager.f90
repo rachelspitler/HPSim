@@ -6778,6 +6778,14 @@ if (OneTimeFlag) then
           ErrorsFound=.true.
         end if
 
+        !RS: Added in as part of recovery effort (6/30/18)
+      CASE ('COIL:HPSim')   !RS: Debugging: Trying to put in HPSim as an independent air coil component (10/31/14)
+        CALL ValidateComponent('Coil:Heating:Electric',DisSysCompCoilData(i)%Name,IsNotOK,  &
+                               RoutineName//TRIM(CurrentModuleObject))
+        If (IsNotOk) then
+          ErrorsFound=.true.
+        end if
+        
       CASE DEFAULT
         CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//' Invalid coil type = ' &
                              //DisSysCompCoilData(i)%Name)
