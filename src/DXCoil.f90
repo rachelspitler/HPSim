@@ -8175,18 +8175,14 @@ REAL(r64) :: AirVolumeFlowRate     ! Air volume flow rate across the cooling coi
 REAL(r64) :: VolFlowperRatedTotCap ! Air volume flow rate divided by rated total cooling capacity [m3/s-W] (adjusted for bypass)
 REAL(r64) :: BypassFlowFraction    ! Fraction of total flow which is bypassed around the cooling coil
 REAL(r64) :: TotCap                ! gross total cooling capacity at off-rated conditions [W]
-!REAL(r64) :: TotCapTempModFac      ! Total capacity modifier (function of entering wetbulb, outside drybulb)
-!REAL(r64) :: TotCapFlowModFac      ! Total capacity modifier (function of actual supply air flow vs rated flow)
 REAL(r64) :: InletAirWetBulbC      ! wetbulb temperature of inlet air [C]
 REAL(r64) :: InletAirDryBulbTemp   ! inlet air dry bulb temperature [C]
 REAL(r64) :: InletAirEnthalpy      ! inlet air enthalpy [J/kg]
 REAL(r64) :: InletAirHumRat        ! inlet air humidity ratio [kg/kg]
 REAL(r64) :: InletAirHumRatTemp    ! inlet air humidity ratio used in ADP/BF loop [kg/kg]
 !  Eventually inlet air conditions will be used in DX Coil, these lines are commented out and marked with this comment line
-!REAL(r64) :: RatedCBF              ! coil bypass factor at rated conditions
 REAL(r64) :: SHR                   ! Sensible Heat Ratio (sensible/total) of the cooling coil
 REAL(r64) :: CBF                   ! coil bypass factor at off rated conditions
-!REAL(r64) :: A0                    ! NTU * air mass flow rate, used in CBF calculation
 REAL(r64) :: hDelta                ! Change in air enthalpy across the cooling coil [J/kg]
 REAL(r64) :: hADP                  ! Apparatus dew point enthalpy [J/kg]
 REAL(r64) :: hTinwADP              ! Enthalpy at inlet dry-bulb and wADP [J/kg]
@@ -8483,59 +8479,11 @@ ELSEIF((AirMassFlow .GT. 0.0) .AND. &
   ELSE
     VolFlowperRatedTotCap = AirVolumeFlowRate/DXCoil(DXCoilHPSimNum)%RatedTotCap(Mode)
   END IF
-  !IF (.NOT. FirstHVACIteration .AND. &
-  !    .NOT. WarmupFlag .AND. DXCoil(DXCoilHPSimNum)%DXCoilType_Num .NE. CoilDX_HeatPumpWaterHeater .AND. &
-  !    ((VolFlowperRatedTotCap .LT. MinOperVolFlowPerRatedTotCap) .OR. &
-  !     (VolFlowperRatedTotCap .GT. MaxCoolVolFlowPerRatedTotCap))) THEN
-  !  IF (DXCoil(DXCoilHPSimNum)%ErrIndex1 == 0) THEN
-  !    CALL ShowWarningMessage(TRIM(DXCoil(DXCoilHPSimNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilHPSimNum)%Name)//&
-  !      '" - Air volume flow rate per watt of rated total cooling capacity is out of range at '//  &
-  !        TRIM(RoundSigDigits(VolFlowperRatedTotCap,3))//' m3/s/W.')
-  !    CALL ShowContinueErrorTimeStamp(' ')
-  !    CALL ShowContinueError('Expected range for VolumeFlowPerRatedTotalCapacity=['//  &
-  !        TRIM(RoundSigDigits(MinOperVolFlowPerRatedTotCap,3))//'--'//  &
-  !        TRIM(RoundSigDigits(MaxCoolVolFlowPerRatedTotCap,3))//']')
-  !    CALL ShowContinueError('Possible causes include inconsistent air flow rates in system components,')
-  !    CALL ShowContinueError('or variable air volume [VAV] system using incorrect coil type.')
-  !  ENDIF
-  !  CALL ShowRecurringWarningErrorAtEnd(TRIM(DXCoil(DXCoilHPSimNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilHPSimNum)%Name)//&
-  !        '" - Air volume flow rate per watt of rated total cooling capacity is out ' //&
-  !        'of range error continues...',DXCoil(DXCoilHPSimNum)%ErrIndex1,VolFlowperRatedTotCap,VolFlowperRatedTotCap)
-  !ELSEIF (.NOT. WarmupFlag .AND. DXCoil(DXCoilHPSimNum)%DXCoilType_Num .EQ. CoilDX_HeatPumpWaterHeater .AND. &
-  !    ((VolFlowperRatedTotCap .LT. MinOperVolFlowPerRatedTotCap) .OR. &
-  !     (VolFlowperRatedTotCap .GT. MaxHeatVolFlowPerRatedTotCap))) THEN
-  !  IF (DXCoil(DXCoilHPSimNum)%ErrIndex1 == 0) THEN
-  !    CALL ShowWarningMessage(TRIM(DXCoil(DXCoilHPSimNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilHPSimNum)%Name)//&
-  !           '" - Air volume flow rate per watt of rated total water heating capacity is out of range at '// &
-  !        TRIM(RoundSigDigits(VolFlowperRatedTotCap,2))//' m3/s/W.')
-  !    CALL ShowContinueErrorTimeStamp(' ')
-  !    CALL ShowContinueError('Expected range for VolumeFlowPerRatedTotalCapacity=['//  &
-  !        TRIM(RoundSigDigits(MinOperVolFlowPerRatedTotCap,3))//'--'//  &
-  !        TRIM(RoundSigDigits(MaxHeatVolFlowPerRatedTotCap,3))//']')
-  !    CALL ShowContinueError('Possible causes may be that the parent object is calling for an actual supply air flow'//&
-  !                             ' rate that is much higher or lower than the DX coil rated supply air flow rate.')
-  !  ENDIF
-  !  CALL ShowRecurringWarningErrorAtEnd(TRIM(DXCoil(DXCoilHPSimNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilHPSimNum)%Name)//&
-  !        '" - Air volume flow rate per watt of rated total water heating capacity is out ' //&
-  !        'of range error continues...',DXCoil(DXCoilHPSimNum)%ErrIndex1,VolFlowperRatedTotCap,VolFlowperRatedTotCap)
-  !END IF
-  
+ 
 !
 !    Adjust coil bypass factor for actual air flow rate. Use relation CBF = exp(-NTU) where
 !    NTU = A0/(m*cp). Relationship models the cooling coil as a heat exchanger with Cmin/Cmax = 0.
-
-  !RatedCBF = DXCoil(DXCoilNum)%RatedCBF(Mode)
-  !IF (RatedCBF .gt. 0.0) THEN
-  !   A0 = -log(RatedCBF)*DXCoil(DXCoilNum)%RatedAirMassFlowRate(Mode)
-  !ELSE
-  !   A0 = 0.
-  !END IF
-  !ADiff=-A0/AirMassFlow
-  !IF (ADiff >= EXP_LowerLimit) THEN
-  !   CBF = exp(ADiff)
-  !ELSE
      CBF = 0.0
-  !END IF
 
 !   check boundary for low ambient temperature and post warnings to individual DX coil buffers to print at end of time step
     !IF (DXCoil(DXCoilNum)%CondenserType(Mode) .EQ. AirCooled) THEN
@@ -8550,84 +8498,10 @@ ELSEIF((AirMassFlow .GT. 0.0) .AND. &
                      //TRIM(CreateSysTimeIntervalString())
         END IF
       END IF
-    !ELSEIF (DXCoil(DXCoilNum)%CondenserType(Mode) == EvapCooled) THEN
-    !  IF(OutdoorWetBulb .LT. 10.0d0 .AND. .NOT. WarmUpFlag) THEN !Same threshold as for evap-cooled electric chiller
-    !    DXCoil(DXCoilNum)%PrintLowAmbMessage = .TRUE.
-    !    DXCoil(DXCoilNum)%LowTempLast = OutdoorWetBulb
-    !    IF(DXCoil(DXCoilNum)%LowAmbErrIndex == 0)THEN
-    !      DXCoil(DXCoilNum)%LowAmbBuffer1 = TRIM(DXCoil(DXCoilNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilNum)%Name)// &
-    !       '" - Evap-cooled condenser inlet wet-bulb temperature below 10 C. Outdoor wet-bulb temperature = '//  &
-    !        TRIM(RoundSigDigits(OutdoorWetBulb,2))
-    !      DXCoil(DXCoilNum)%LowAmbBuffer2 = ' '//'... Occurrence info = '//TRIM(EnvironmentName)//', '//Trim(CurMnDy)//' '&
-    !                 //TRIM(CreateSysTimeIntervalString())
-    !    END IF
-    !  END IF
-    !END IF
 
 !  Get total capacity modifying factor (function of temperature) for off-rated conditions
 !  InletAirHumRat may be modified in this ADP/BF loop, use temporary varible for calculations
    InletAirHumRatTemp = InletAirHumRat
-!50 IF(DXCoil(DXCoilHPSimNum)%DXCoilType_Num .EQ. CoilDX_HeatPumpWaterHeater) THEN
-!!    Coil:DX:HeatPumpWaterHeater does not have total cooling capacity as a function of temp or flow curve
-!     TotCapTempModFac = 1.0d0
-!     TotCapFlowModFac = 1.0d0
-!   ELSE
-!     IF(DXCoil(DXCoilNum)%TotCapTempModFacCurveType(Mode) .EQ. Biquadratic) THEN
-!       TotCapTempModFac = CurveValue(DXCoil(DXCoilNum)%CCapFTemp(Mode),InletAirWetbulbC,CondInletTemp)
-!     ELSE
-!       TotCapTempModFac = CurveValue(DXCoil(DXCoilNum)%CCapFTemp(Mode),CondInletTemp)
-!     END IF
-!
-!!    Warn user if curve output goes negative
-!     IF(TotCapTempModFac .LT. 0.0)THEN
-!       IF(DXCoil(DXCoilNum)%CCapFTempErrorIndex == 0)THEN
-!         CALL ShowWarningMessage(TRIM(DXCoil(DXCoilNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilNum)%Name)//'":')
-!         CALL ShowContinueError(' Total Cooling Capacity Modifier curve (function of temperature) output is negative (' &
-!                           //TRIM(TrimSigDigits(TotCapTempModFac,3))//').')
-!         IF(DXCoil(DXCoilNum)%TotCapTempModFacCurveType(Mode) .EQ. Biquadratic) THEN
-!           CALL ShowContinueError(' Negative value occurs using a condenser inlet air temperature of ' &
-!                            //TRIM(TrimSigDigits(CondInletTemp,1))// &
-!                               ' and an inlet air wet-bulb temperature of '//TRIM(TrimSigDigits(InletAirWetbulbC,1))//'.')
-!         ELSE
-!           CALL ShowContinueError(' Negative value occurs using a condenser inlet air temperature of ' &
-!                            //TRIM(TrimSigDigits(CondInletTemp,1))//'.')
-!         END IF
-!         IF(Mode .GT. 1)THEN
-!           Call ShowContinueError(' Negative output results from stage '//TRIM(TrimSigDigits(Mode))// &
-!                                  ' compressor operation.')
-!         END IF
-!         CALL ShowContinueErrorTimeStamp(' Resetting curve output to zero and continuing simulation.')
-!       END IF
-!       CALL ShowRecurringWarningErrorAtEnd(TRIM(DXCoil(DXCoilNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilNum)%Name)//'":'//&
-!           ' Total Cooling Capacity Modifier curve (function of temperature) output is negative warning continues...' &
-!           , DXCoil(DXCoilNum)%CCapFTempErrorIndex, TotCapTempModFac, TotCapTempModFac)
-!       TotCapTempModFac = 0.0
-!     END IF
-!
-!!    Get total capacity modifying factor (function of mass flow) for off-rated conditions
-!     AirMassFlowRatio = AirMassFlow/DXCoil(DXCoilNum)%RatedAirMassFlowRate(Mode)
-!     TotCapFlowModFac = CurveValue(DXCoil(DXCoilNum)%CCapFFlow(Mode),AirMassFlowRatio)
-!
-!!    Warn user if curve output goes negative
-!     IF(TotCapFlowModFac .LT. 0.0)THEN
-!       IF(DXCoil(DXCoilNum)%CCapFFlowErrorIndex == 0)THEN
-!         CALL ShowWarningMessage(TRIM(DXCoil(DXCoilNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilNum)%Name)//'":')
-!         CALL ShowContinueError(' Total Cooling Capacity Modifier curve (function of flow fraction) output is negative (' &
-!                           //TRIM(TrimSigDigits(TotCapFlowModFac,3))//').')
-!         CALL ShowContinueError(' Negative value occurs using an air flow fraction of ' &
-!                            //TRIM(TrimSigDigits(AirMassFlowRatio,3))//'.')
-!         CALL ShowContinueErrorTimeStamp(' Resetting curve output to zero and continuing simulation.')
-!         IF(Mode .GT. 1)THEN
-!           Call ShowContinueError(' Negative output results from stage '//TRIM(TrimSigDigits(Mode))// &
-!                                  ' compressor operation.')
-!         END IF
-!       END IF
-!       CALL ShowRecurringWarningErrorAtEnd(TRIM(DXCoil(DXCoilNum)%DXCoilType)//' "'//TRIM(DXCoil(DXCoilNum)%Name)//'":'//&
-!          ' Total Cooling Capacity Modifier curve (function of flow fraction) output is negative warning continues...' &
-!          , DXCoil(DXCoilNum)%CCapFFlowErrorIndex, TotCapFlowModFac, TotCapFlowModFac)
-!       TotCapFlowModFac = 0.0
-!     END IF
-!    END IF
 
 
     XMaE=DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate
@@ -8675,7 +8549,7 @@ ELSEIF((AirMassFlow .GT. 0.0) .AND. &
   len(path))
 
 path_1=TRIM(path)
-StrScalar='C:\Users\lab303user\Documents\betsrg_dual\GenOpt\tmp-genopt-run-6'
+StrScalar='C:\Users\lab303user\Desktop\HPSimProject\HPSimBuild\GenOpt\tmp-genopt-run-6' !'C:\Users\lab303user\Documents\betsrg_dual\GenOpt\tmp-genopt-run-6'
 
 
 path_1_len=LEN_TRIM(path_1)
@@ -8703,12 +8577,6 @@ FolderPath=path_2
       read(120,'(A)')arr(i)
     end do
     close(120)
-
-    ! do i=1,7
-    !  read(12,'(A)') line
-    !  write(1,'(A)') line
-    !end do
-    !close(12)
     
     do i=1,7
       write(130,'(A)')arr(i)

@@ -76,6 +76,14 @@ SUBROUTINE IssueHPFatalError(exitCode)
     INTEGER :: Counter
     CHARACTER(LEN=MaxNameLength) :: CodeMessage
 
+    logical :: exist
+  inquire(file='Log.audit', exist=exist)
+  if (exist) then
+  else
+    open(122, file="Log.audit", status="new", action="write")
+  end if
+  close(122)
+  
     DO Counter = 1, SIZE(StopCodes)
         IF (exitCode == StopCodes(Counter)%ExitCode) THEN
             CodeMessage = StopCodes(Counter)%Message
@@ -89,18 +97,48 @@ SUBROUTINE IssueHPFatalError(exitCode)
     WRITE(*,*) 'Exit code follows:'
     SELECT CASE (exitCode)
     CASE (exit_FileIO_Missing_HPData)
+        OPEN(UNIT=19, FILE='NC.txt')    !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        WRITE(19,*) 'Initializing "Not Converged" file'
+        WRITE(*,*)'Initializing "Not Converged" file'
+        CLOSE(19)
+        OPEN(20, FILE='Crash.txt', STATUS='old')   !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        CLOSE(20, STATUS='DELETE') !RS: Debugging: Trying to set up a buffer program (10/9/14)
         STOP exit_FileIO_Missing_HPData
     CASE (exit_Diagnostic_RefrigerantName)
+        OPEN(UNIT=19, FILE='NC.txt')    !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        WRITE(19,*) 'Initializing "Not Converged" file'
+        WRITE(*,*) 'Initializing "Not Converged" file'
+        CLOSE(19)
+        OPEN(20, FILE='Crash.txt', STATUS='old')   !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        CLOSE(20, STATUS='DELETE') !RS: Debugging: Trying to set up a buffer program (10/9/14)
         STOP exit_Diagnostic_RefrigerantName
     CASE (exit_SimProblem_BadInitialization)
+        OPEN(UNIT=19, FILE='NC.txt')    !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        WRITE(19,*) 'Initializing "Not Converged" file'
+        WRITE(*,*) 'Initializing "Not Converged" file'
+        CLOSE(19)
+        OPEN(20, FILE='Crash.txt', STATUS='old')   !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        CLOSE(20, STATUS='DELETE') !RS: Debugging: Trying to set up a buffer program (10/9/14)
         STOP exit_SimProblem_BadInitialization
     CASE (exit_SimProblem_EnergyPlusProblem)
+        OPEN(UNIT=19, FILE='NC.txt')    !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        WRITE(19,*) 'Initializing "Not Converged" file'
+        WRITE(*,*) 'Initializing "Not Converged" file'
+        CLOSE(19)
+        OPEN(20, FILE='Crash.txt', STATUS='old')   !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        CLOSE(20, STATUS='DELETE') !RS: Debugging: Trying to set up a buffer program (10/9/14)
         STOP exit_SimProblem_EnergyPlusProblem
     CASE DEFAULT
+        OPEN(UNIT=19, FILE='NC.txt')    !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        WRITE(19,*) 'Initializing "Not Converged" file'
+        WRITE(*,*) 'Initializing "Not Converged" file'
+        CLOSE(19)
         WRITE(*,*) '-+-Diagnostic-+- Unimplemented stop code in UtilityRoutines::IssueHPFatalError'
+        OPEN(20, FILE='Crash.txt', STATUS='old')   !RS: Debugging: Trying to set up a buffer program (10/9/14)
+        CLOSE(20, STATUS='DELETE') !RS: Debugging: Trying to set up a buffer program (10/9/14)
         STOP 1
     END SELECT
-
+  !READ(*,*) 
 END SUBROUTINE
 
 LOGICAL FUNCTION IssueRefPropError(RefPropErrValue, CallingRoutine, ValueIfErrorFound, VariableToSet1, VariableToSet2) RESULT (ErrorFound)
@@ -111,37 +149,147 @@ LOGICAL FUNCTION IssueRefPropError(RefPropErrValue, CallingRoutine, ValueIfError
     INTEGER, INTENT(IN), OPTIONAL :: ValueIfErrorFound ! if RefProp was erroneous, this is the signaling value to be used
     INTEGER, INTENT(INOUT), OPTIONAL :: VariableToSet1 ! if RefProp was erroneous, this will be set to the signal value
     REAL, INTENT(INOUT), OPTIONAL :: VariableToSet2 ! another variable to set...optionally
-
+logical :: exist
+  inquire(file='Log.audit', exist=exist)
+  if (exist) then
+  else
+    open(122, file="Log.audit", status="new", action="write")
+  end if
+  close(122)
     IF ( (PRESENT(VariableToSet1) .OR. PRESENT(VariableToSet2)) .AND.  .NOT. PRESENT(ValueIfErrorFound) ) THEN
         !malformed, how are we going to assign variables if we don't have a value to assign with
         WRITE(*,*) '-+-Diagnostic-+- Improper call to IssueRefPropError, callingroutine = '//CallingRoutine
     END IF
 
     ErrorFound = .FALSE.
-    IF (RefPropErrValue .GT. 0) THEN
-        CALL ShowWarningError(CallingRoutine//': RefProp lookup error')
-        IF ( PRESENT ( VariableToSet1 ) ) THEN
-            VariableToSet1 = ValueIfErrorFound
-        END IF
-        IF ( PRESENT ( VariableToSet2 ) ) THEN
-            VariableToSet2 = REAL(ValueIfErrorFound)
-        END IF
+    IF (RefPropErrValue .GT. 0) THEN    !RS: Debugging: Having an issue with CallingRoutine being an undefined address (11/4/14)
+        CALL ShowWarningError(': RefProp lookup error') !CallingRoutine//': RefProp lookup error')
+        !IF ( PRESENT ( VariableToSet1 ) ) THEN
+        !    VariableToSet1 = ValueIfErrorFound
+        !END IF
+        !IF ( PRESENT ( VariableToSet2 ) ) THEN
+        !    VariableToSet2 = REAL(ValueIfErrorFound)
+        !END IF
         ErrorFound = .TRUE.
     END IF
 
     RETURN
-
+  !READ(*,*) 
 END FUNCTION
 
 SUBROUTINE IssueOutputMessage(Message)
     implicit none
-
     CHARACTER(LEN=*), INTENT(IN) :: Message
-
-    WRITE(6,*) Message
+    logical :: exist
+  inquire(file='Log.audit', exist=exist)
+  if (exist) then
+  else
+    open(122, file="Log.audit", status="new", action="write")
+  end if
+  close(122)
+    open(111,file='Log.audit',status='old',action='write',form='formatted',position="append")
+    WRITE(111,*) Message
     WRITE(*,*) Message
-
+    close(111)
+      !READ(*,*) 
 END SUBROUTINE
+
+
+SUBROUTINE ShowFatalError(ErrorMessage)
+  IMPLICIT NONE
+  CHARACTER(len=*) ErrorMessage
+  INTERFACE
+    SUBROUTINE ShowErrorMessage(Message)
+        CHARACTER(len=*) Message
+    END SUBROUTINE
+  END INTERFACE
+  CALL ShowErrorMessage(' **  Fatal  ** '//ErrorMessage)
+  CALL AbortEnergyPlus
+  RETURN
+END SUBROUTINE ShowFatalError
+
+SUBROUTINE ShowSevereError(ErrorMessage)
+  USE DataGlobals
+  IMPLICIT NONE
+  CHARACTER(len=*) ErrorMessage
+  INTERFACE
+    SUBROUTINE ShowErrorMessage(Message)
+        CHARACTER(len=*) Message
+    END SUBROUTINE
+  END INTERFACE
+  TotalSevereErrors=TotalSevereErrors+1
+  CALL ShowErrorMessage(' ** Severe  ** '//ErrorMessage)
+  RETURN
+END SUBROUTINE ShowSevereError
+
+SUBROUTINE ShowContinueError(Message)
+  IMPLICIT NONE
+  CHARACTER(len=*) Message
+  INTERFACE
+    SUBROUTINE ShowErrorMessage(Message)
+        CHARACTER(len=*) Message
+    END SUBROUTINE
+  END INTERFACE
+  CALL ShowErrorMessage(' **   ~~~   ** '//Message)
+  RETURN
+END SUBROUTINE ShowContinueError
+
+SUBROUTINE ShowMessage(MessageVal)
+  CHARACTER(len=*) MessageVal
+  INTERFACE
+    SUBROUTINE ShowErrorMessage(MessageVal)
+      CHARACTER(len=*) MessageVal
+    END SUBROUTINE
+  END INTERFACE
+  CALL ShowErrorMessage(' ************* '//MessageVal)
+RETURN
+END SUBROUTINE ShowMessage
+
+SUBROUTINE ShowWarningError(ErrorMessage)
+  USE DataGlobals
+  IMPLICIT NONE 
+  CHARACTER(len=*) ErrorMessage
+  INTERFACE
+      SUBROUTINE ShowErrorMessage(Message)
+        CHARACTER(len=*) Message
+      END SUBROUTINE
+  END INTERFACE
+  TotalWarningErrors=TotalWarningErrors+1
+  CALL ShowErrorMessage(' ** Warning ** '//ErrorMessage)
+  RETURN
+END SUBROUTINE ShowWarningError
+!
+SUBROUTINE ShowErrorMessage(ErrorMessage)
+  USE DataGlobals
+  IMPLICIT NONE  
+  CHARACTER(len=*) ErrorMessage
+  CHARACTER(len=120) :: VerString='EnergyPlus, Version 1.1.1'    
+  CHARACTER(len=*), PARAMETER :: ErrorFormat='(2X,A)'
+  INTEGER  :: TotalErrors=0        ! used to determine when to open standard error output file.
+  INTEGER  :: StandardErrorOutput
+  INTEGER,EXTERNAL  :: GetNewUnitNumber
+  logical :: exist
+  SAVE     TotalErrors,StandardErrorOutput
+  inquire(file='Log.audit', exist=exist)
+  if (exist) then
+  else
+    open(122, file="Log.audit", status="new", action="write")
+  end if
+  close(122)
+  IF (TotalErrors .eq. 0) THEN
+    StandardErrorOutput=GetNewUnitNumber()
+    open(111,file='Log.audit',status='old',action='write',form='formatted',position="append")
+    WRITE(111,'(A)') 'Program Version,'//TRIM(VerString)
+    WRITE(*,'(A)') 'Program Version,'//TRIM(VerString)
+  ENDIF
+  TotalErrors=TotalErrors+1
+  WRITE(111,ErrorFormat) TRIM(ErrorMessage)
+  WRITE(*,ErrorFormat) TRIM(ErrorMessage)
+  close(111)
+  !READ(*,*) 
+  RETURN
+END SUBROUTINE ShowErrorMessage
+
 
 SUBROUTINE AbortEnergyPlus
 
@@ -163,7 +311,7 @@ SUBROUTINE AbortEnergyPlus
           ! na
 
           ! USE STATEMENTS:
-  USE DataGlobals !RS Comment: Needs to be used for implementation with Energy+ currently (7/23/12)
+  USE DataGlobals
   USE DataStopCodes
 
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
@@ -286,7 +434,7 @@ SUBROUTINE EndEnergyPlus
           ! na
 
           ! USE STATEMENTS:
-  USE DataGlobals   !RS Comment: Needs to be used for implementation with Energy+ currently (7/23/12)
+  USE DataGlobals
   USE InputProcessor
 
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
@@ -426,342 +574,6 @@ FUNCTION GetNewUnitNumber ()  RESULT (UnitNumber)
   UnitNumber = -1
 
 END FUNCTION GetNewUnitNumber
-
-SUBROUTINE ShowFatalError(ErrorMessage,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   September 1997
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine puts ErrorMessage with a Fatal designation on
-          ! designated output files.  Then, the program is aborted.
-
-          ! METHODOLOGY EMPLOYED:
-          ! Calls ShowErrorMessage utility routine.
-          ! Calls AbortEnergyPlus
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-          ! na
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) ErrorMessage
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-          ! na
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-  INTERFACE
-  
-    SUBROUTINE ShowErrorMessage(Message,Unit1,Unit2)
-        CHARACTER(len=*) Message
-        INTEGER, OPTIONAL :: Unit1
-        INTEGER, OPTIONAL :: Unit2
-    END SUBROUTINE
-    
-  END INTERFACE
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-          ! na
-
-  CALL ShowErrorMessage(' **  Fatal  ** '//ErrorMessage,OutUnit1,OutUnit2)
-  CALL AbortEnergyPlus
-
-  RETURN
-
-END SUBROUTINE ShowFatalError
-
-SUBROUTINE ShowSevereError(ErrorMessage,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   September 1997
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine puts ErrorMessage with a Severe designation on
-          ! designated output files.
-
-          ! METHODOLOGY EMPLOYED:
-          ! Calls ShowErrorMessage utility routine.
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-  USE DataGlobals !RS Comment: Needs to be used for implementation with Energy+ currently (7/23/12)
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) ErrorMessage
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-          ! na
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-  INTERFACE
-  
-    SUBROUTINE ShowErrorMessage(Message,Unit1,Unit2)
-        CHARACTER(len=*) Message
-        INTEGER, OPTIONAL :: Unit1
-        INTEGER, OPTIONAL :: Unit2
-    END SUBROUTINE
-    
-  END INTERFACE
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-  TotalSevereErrors=TotalSevereErrors+1
-  CALL ShowErrorMessage(' ** Severe  ** '//ErrorMessage,OutUnit1,OutUnit2)
-
-  !  Could set a variable here that gets checked at some point?
-
-  RETURN
-
-END SUBROUTINE ShowSevereError
-
-SUBROUTINE ShowContinueError(Message,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   October 2001
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine displays a 'continued error' message on designated output files.
-
-          ! METHODOLOGY EMPLOYED:
-          ! Calls ShowErrorMessage utility routine.
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-          ! na
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) Message
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-          ! na
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-  INTERFACE
-  
-    SUBROUTINE ShowErrorMessage(Message,Unit1,Unit2)
-        CHARACTER(len=*) Message
-        INTEGER, OPTIONAL :: Unit1
-        INTEGER, OPTIONAL :: Unit2
-    END SUBROUTINE
-    
-  END INTERFACE
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-          ! na
-
-  CALL ShowErrorMessage(' **   ~~~   ** '//Message,OutUnit1,OutUnit2)
-
-  RETURN
-
-END SUBROUTINE ShowContinueError
-
-SUBROUTINE ShowMessage(Message,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   September 1997
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine displays a simple message on designated output files.
-
-          ! METHODOLOGY EMPLOYED:
-          ! Calls ShowErrorMessage utility routine.
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-          ! na
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) Message
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-          ! na
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-  INTERFACE
-    
-  SUBROUTINE ShowErrorMessage(Message,Unit1,Unit2)
-    CHARACTER(len=*) Message
-    INTEGER, OPTIONAL :: Unit1
-    INTEGER, OPTIONAL :: Unit2
-  END SUBROUTINE
-  
-  END INTERFACE
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-          ! na
-
-  CALL ShowErrorMessage(' ************* '//Message,OutUnit1,OutUnit2)
-
-  RETURN
-
-END SUBROUTINE ShowMessage
-
-SUBROUTINE ShowWarningError(ErrorMessage,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   September 1997
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine puts ErrorMessage with a Warning designation on
-          ! designated output files.
-
-          ! METHODOLOGY EMPLOYED:
-          ! Calls ShowErrorMessage utility routine.
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-  USE DataGlobals !RS Comment: Needs to be used for implementation with Energy+ currently (7/23/12)
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) ErrorMessage
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-          ! na
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-  INTERFACE
-    
-  SUBROUTINE ShowErrorMessage(Message,Unit1,Unit2)
-    CHARACTER(len=*) Message
-    INTEGER, OPTIONAL :: Unit1
-    INTEGER, OPTIONAL :: Unit2
-  END SUBROUTINE
-  
-  END INTERFACE
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-
-  TotalWarningErrors=TotalWarningErrors+1
-  CALL ShowErrorMessage(' ** Warning ** '//ErrorMessage,OutUnit1,OutUnit2)
-
-  RETURN
-
-END SUBROUTINE ShowWarningError
-
-SUBROUTINE ShowErrorMessage(ErrorMessage,OutUnit1,OutUnit2)
-
-          ! SUBROUTINE INFORMATION:
-          !       AUTHOR         Linda K. Lawrie
-          !       DATE WRITTEN   December 1997
-          !       MODIFIED       na
-          !       RE-ENGINEERED  na
-
-          ! PURPOSE OF THIS SUBROUTINE:
-          ! This subroutine displays the error messages on the indicated
-          ! file unit numbers, in addition to the "standard error output"
-          ! unit.
-
-          ! METHODOLOGY EMPLOYED:
-          ! If arguments OutUnit1 and/or OutUnit2 are present the
-          ! error message is written to these as well and the standard one.
-
-          ! REFERENCES:
-          ! na
-
-          ! USE STATEMENTS:
-  USE DataStringGlobals !RS Comment: Needs to be used for implementation with Energy+ currently (7/23/12), ONLY: VerString
-
-  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
-
-          ! SUBROUTINE ARGUMENT DEFINITIONS:
-  CHARACTER(len=*) ErrorMessage
-  INTEGER, OPTIONAL :: OutUnit1
-  INTEGER, OPTIONAL :: OutUnit2
-
-          ! SUBROUTINE PARAMETER DEFINITIONS:
-  CHARACTER(len=*), PARAMETER :: ErrorFormat='(2X,A)'
-
-          ! INTERFACE BLOCK SPECIFICATIONS
-          ! na
-
-          ! DERIVED TYPE DEFINITIONS
-          ! na
-
-          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-  INTEGER  :: TotalErrors=0        ! used to determine when to open standard error output file.
-  INTEGER  :: StandardErrorOutput
-  INTEGER,EXTERNAL  :: GetNewUnitNumber
-  SAVE     TotalErrors,StandardErrorOutput
-
-  IF (TotalErrors .eq. 0) THEN
-    StandardErrorOutput=GetNewUnitNumber()
-    OPEN(StandardErrorOutput,FILE='eplusout.err')
-    WRITE(StandardErrorOutput,'(A)') 'Program Version,'//TRIM(VerString)
-  ENDIF
-
-  TotalErrors=TotalErrors+1
-  WRITE(StandardErrorOutput,ErrorFormat) TRIM(ErrorMessage)
-  IF (PRESENT(OutUnit1)) THEN
-    WRITE(OutUnit1,ErrorFormat) TRIM(ErrorMessage)
-  ENDIF
-  IF (PRESENT(OutUnit2)) THEN
-    WRITE(OutUnit2,ErrorFormat) TRIM(ErrorMessage)
-  ENDIF
-
-  RETURN
-
-END SUBROUTINE ShowErrorMessage
 
 SUBROUTINE ShowSevereError1(ErrorMessage,OutUnit1)  !RS: Trying this to debug since the Optional values don't seem to be working.
 
