@@ -2171,7 +2171,8 @@ SUBROUTINE SimZoneEquipment(FirstHVACIteration, SimAir)
   USE HVACVariableRefrigerantFlow, ONLY: SimulateVRF
   USE RefrigeratedCase, ONLY: SimAirChillerSet
   USE UserDefinedComponents, ONLY: SimZoneAirUserDefined
-  USE DataGlobals, ONLY: CurrentTime   !RS: Debugging: CurrentTime
+  USE DataGlobals, ONLY: CurrentTime, WarmUpFlag   !RS: Debugging: CurrentTime, if in warmup
+  USE DataLoopNode, ONLY: Node
 
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
 
@@ -2211,10 +2212,10 @@ SUBROUTINE SimZoneEquipment(FirstHVACIteration, SimAir)
   INTEGER :: TimeTemp   =151 !RS: Debugging: File for plotting temp vs. time
   CHARACTER(LEN=13),PARAMETER :: FMT_100 = "(2(A12,','))" !RS: Debugging
   CHARACTER(LEN=25),PARAMETER :: FMT_104 = "(2(F10.4,','))"    !RS: Debugging
-  !INTEGER :: LogFile       !=13 !RS: Debugging file denotion, hopefully this works.
-  !INTEGER, EXTERNAL :: GetNewUnitNumber  ! External  function to "get" a unit number    !RS: Debugging
-  !  
-  !  LogFile=GetNewUnitNumber()  !RS: Debugging: Trying to prevent errors with E+ by not hardcoding
+  CHARACTER(LEN=25),PARAMETER :: FMT_153 = "(1(A12,','),5(F10.3,','))"
+  REAL, SAVE :: SysTimeTemp=0   !RS: Debugging: Keeping track of the system time (8/21/14)
+    
+  !OPEN(unit=LogFile,file='logfile.csv')    !RS: Debugging
     
   OPEN(unit=LogFile,file='logfile.txt')    !RS: Debugging
     
@@ -2340,17 +2341,25 @@ SUBROUTINE SimZoneEquipment(FirstHVACIteration, SimAir)
 
            CASE (PkgTermHPAirToAir_Num)  ! 'ZoneHVAC:PackagedTerminalHeatPump'
                                          ! 'ZoneHVAC:PackagedTerminalAirConditioner'
+                    !RS: Debugging: Removing call to see what happens with simple coil (10/23/14)
+            IF (WARMUPFlag) THEN    !RS: Debugging: Just to try to ignore this simple case when actually running simulation (8/13/14)
              CALL SimPackagedTerminalUnit(PrioritySimOrder(EquipTypeNum)%EquipName, ActualZoneNum, &
                                  FirstHVACIteration, SysOutputProvided, LatOutputProvided, &
                                  ZoneEquipList(CurZoneEqNum)%EquipIndex(EquipPtr))
+            END IF
              
            CASE (HPSim)
-               WRITE(LogFile,*) 'EnergyPlus Timestep: ',CurrentTime !RS: Debugging: Printing out the current time
                !RS: Implementation: Trying call HPSim from PackagedTerminalHeatPump
+               !RS: Debugging: Removing call to see what happens with simple coil (10/23/14)
                CALL SimPackagedTerminalUnit(PrioritySimOrder(EquipTypeNum)%EquipName, ActualZoneNum, &
                                  FirstHVACIteration, SysOutputProvided, LatOutputProvided, &
                                  ZoneEquipList(CurZoneEqNum)%EquipIndex(EquipPtr))
-               !WRITE(LogFile,*) 'Zone Temperature ',MAT(1)  !RS: Debugging
+                !IF ((SysTimeTemp-SysTimeElapsed) .NE. 0) THEN   !RS: Debugging: Seeing if the data is passed correctly (8/20/14)
+                !  WRITE(LogFile,FMT_153) 'E+ Side',Node(3)%Temp,Node(3)%HumRat, &  !RS: Debugging
+                !    Node(2)%Temp,Node(2)%HumRat, SysOutputProvided
+                !END IF
+                !SysTimeTemp=SysTimeElapsed
+
                !WRITE(TimeTemp,FMT_104) CurrentTime,MAT(1)
 
            CASE (ZoneDXDehumidifier_Num) ! 'ZoneHVAC:Dehumidifier:DX'

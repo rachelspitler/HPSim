@@ -2243,6 +2243,7 @@ SUBROUTINE SetCurrentWeather
           ! USE STATEMENTS:
   USE General, ONLY: JulianDay
   USE ScheduleManager, ONLY: UpdateScheduleValues
+  USE DXCoils   !RS: Debugging: Getting the outside air properties for the HPSim Condenser (11/3/14)
 
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
 
@@ -2394,6 +2395,11 @@ SUBROUTINE SetCurrentWeather
     RptIsSnow=1
   ENDIF
 
+  !RS: Debugging: Getting the outside air properties for the HPSim Condenser (11/3/14)
+  WeathOutDryBulb=OutDryBulbTemp
+  WeathOutHumRat=OutHumRat
+  WeathOutBaroPress=OutBaroPress
+  
   RETURN
 
 END SUBROUTINE SetCurrentWeather

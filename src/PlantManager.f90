@@ -1263,6 +1263,10 @@ SUBROUTINE GetPlantInput
             TempLoop%Branch(BranchNum)%Comp(CompNum)%TypeOf_num = TypeOf_AirTerminalUserDefined
             TempLoop%Branch(BranchNum)%Comp(CompNum)%GeneralEquipType = GenEquipTypes_PlantComponent
             TempLoop%Branch(BranchNum)%Comp(CompNum)%CurOpSchemeType = UnknownStatusOpSchemeType
+          ELSEIF (SameString(CompTypes(CompNum), 'Coil:HPSim') ) THEN !RS: Debugging: Adding in HPSim as a component (10/29/14)
+            TempLoop%Branch(BranchNum)%Comp(CompNum)%TypeOf_num = TypeOf_HPSim !TypeOf_AirTerminalUserDefined
+            TempLoop%Branch(BranchNum)%Comp(CompNum)%GeneralEquipType = GenEquipTypes_DemandCoil
+            TempLoop%Branch(BranchNum)%Comp(CompNum)%CurOpSchemeType = DemandOpSchemeType !UnknownStatusOpSchemeType
           ELSE
            !discover unsupported equipment on branches.
             CALL ShowSevereError('GetPlantInput: Branch="'//trim(BranchNames(BranchNum))//'", invalid component on branch.')
@@ -4205,6 +4209,11 @@ END SUBROUTINE StoreAPumpOnCurrentTempLoop
             PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%FlowCtrl = ControlType_Active
             PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%FlowPriority = LoopFlowStatus_Unknown
             PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%HowLoadServed = HowMet_Unknown
+          CASE ( TypeOf_HPSim ) !RS: Debugging: 85, Demand Side, Adding in HPSim Component (10/29/14)
+            PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%FlowCtrl = ControlType_Active
+            PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%FlowPriority &
+                = LoopFlowStatus_NeedyAndTurnsLoopOn
+            PlantLoop(LoopCtr)%LoopSide(LoopSideCtr)%Branch(BranchCtr)%Comp(CompCtr)%HowLoadServed = HowMet_NoneDemand
           CASE DEFAULT
             Call ShowSevereError('SetBranchControlTypes: Caught unexpected equipment type of number')
 

@@ -988,9 +988,9 @@ SUBROUTINE SimPlantEquip(LoopNum,LoopSideNum,BranchNum,Num,FirstHVACIteration,In
 
         CASE ( TypeOf_CoilWAHPHeatingParamEst )
 
-        CASE ( TypeOf_CoilWAHPCoolingParamEst )
-
-
+        CASE ( TypeOf_CoilWAHPCoolingParamEst ) 
+            
+        CASE ( TypeOf_HPSim )   !RS: Debugging: Adding in HPSim (10/30/14)
 
         CASE DEFAULT
           CALL ShowSevereError('SimPlantEquip: Invalid Load Coil Type='//TRIM(EquipType))

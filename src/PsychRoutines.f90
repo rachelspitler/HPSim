@@ -121,6 +121,7 @@ PRIVATE ! Everything private unless explicitly made public
 
 ! Subroutine Specifications for the Module
 PUBLIC  PsyRhoAirFnPbTdbW
+PUBLIC  PsyRhoAirFnPbTdbW2  !RS: Debugging: Solving for density
 PUBLIC  PsyCpAirFnWTdb
 PUBLIC  PsyHfgAirFnWTdb
 PUBLIC  PsyHgAirFnWTdb
@@ -271,6 +272,58 @@ function PsyRhoAirFnPbTdbW(pb,tdb,dw,calledfrom)  result(rhoair)
   return
 end function PsyRhoAirFnPbTdbW
 
+!RS: Debugging: Creating a second one to handle non-r64 inputs
+
+function PsyRhoAirFnPbTdbW2(pb,tdb,dw)  result(rhoair)
+
+          ! FUNCTION INFORMATION:
+          !       AUTHOR         G. S. Wright
+          !       DATE WRITTEN   June 2, 1994
+          !       MODIFIED       na
+          !       RE-ENGINEERED  na
+
+          ! PURPOSE OF THIS FUNCTION:
+          ! This function provides density of air as a function of barometric
+          ! pressure, dry bulb temperature, and humidity ratio.
+
+          ! METHODOLOGY EMPLOYED:
+          ! ideal gas law
+          !    universal gas const for air 287 J/(kg K)
+          !    air/water molecular mass ratio 28.9645/18.01534
+
+          ! REFERENCES:
+          ! Wylan & Sontag, Fundamentals of Classical Thermodynamics.
+          ! ASHRAE handbook 1985 Fundamentals, Ch. 6, eqn. (6),(26)
+
+          ! USE STATEMENTS:
+          ! na
+
+  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
+
+          ! FUNCTION ARGUMENT DEFINITIONS:
+      REAL, intent(in)  :: pb     ! barometric pressure (Pascals)
+      REAL, intent(in)  :: tdb    ! dry bulb temperature (Celsius)
+      REAL, intent(in)  :: dw      ! humidity ratio (kgWater/kgDryAir)
+      !character(len=*), intent(in), optional :: calledfrom  ! routine this function was called from (error messages) !unused1208
+      REAL         :: rhoair ! result=> density of air
+
+          ! FUNCTION PARAMETER DEFINITIONS:
+          ! na
+
+          ! INTERFACE BLOCK SPECIFICATIONS
+          ! na
+
+          ! DERIVED TYPE DEFINITIONS
+          ! na
+
+          ! FUNCTION LOCAL VARIABLE DECLARATIONS:
+      REAL w  ! humidity ratio
+
+      w=MAX(dw,1.0d-5)
+      rhoair = pb/(287.d0*(tdb+KelvinConv)*(1.d0+1.6077687d0*w))
+
+  return
+end function PsyRhoAirFnPbTdbW2
 
 function PsyCpAirFnWTdb(dw,T,calledfrom) result(cpa)
 

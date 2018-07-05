@@ -1090,6 +1090,9 @@ DO AirSysNum=1,NumPrimaryAirSys
         CASE('AIRLOOPHVAC:UNITARYHEATPUMP:WATERTOAIR')
           PrimaryAirSystem(AirSysNum)%Branch(BranchNum)%Comp(CompNum)%CompType_Num=Furnace_UnitarySys
 
+        CASE('COIL:HPSIM')  !RS: Debugging: Trying to add in HPSim coil (10/29/14)
+          PrimaryAirSystem(AirSysNum)%Branch(BranchNum)%Comp(CompNum)%CompType_Num=DXSystem
+          
         CASE('AIRLOOPHVAC:UNITARYHEATCOOL:VAVCHANGEOVERBYPASS')
           PrimaryAirSystem(AirSysNum)%Branch(BranchNum)%Comp(CompNum)%CompType_Num=UnitarySystem_BypassVAVSys
 
