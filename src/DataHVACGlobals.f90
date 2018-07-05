@@ -89,7 +89,7 @@ CHARACTER(len=*), PARAMETER, PUBLIC, DIMENSION(NumAllFanTypes) :: cFanTypes=  &
          'Fan:ComponentModel      '/)   !cpw22Aug2010 (new)
 
 ! parameters describing coil types
-INTEGER, PARAMETER :: NumAllCoilTypes                = 22
+INTEGER, PARAMETER :: NumAllCoilTypes                = 23 !22   !RS: Debugging: Trying to put in HPSim as an independent air coil component (10/31/14)
 
 INTEGER, PARAMETER :: CoilDX_CoolingSingleSpeed       = 1
 INTEGER, PARAMETER :: CoilDX_HeatingEmpirical         = 2
@@ -154,7 +154,8 @@ CHARACTER(len=*), PARAMETER, DIMENSION(NumAllCoilTypes) :: cAllCoilTypes=  &
          'Coil:Cooling:WaterToAirHeatPump:EquationFit        ',  &
          'Coil:Heating:WaterToAirHeatPump:EquationFit        ',  &
          'COIL:Cooling:DX:VariableRefrigerantFlow            ',  &
-         'COIL:Heating:DX:VariableRefrigerantFlow            '/)
+         'COIL:Heating:DX:VariableRefrigerantFlow            ',  &
+         'COIL:HPSim                                         '/)  !RS: Debugging: Trying to put in HPSim as an independent air coil component (10/31/14)
 
 ! Parameters describing Heat Exchanger types
 INTEGER, PARAMETER :: NumHXTypes            = 3
@@ -288,6 +289,8 @@ TYPE (ComponentSetPtData), ALLOCATABLE, DIMENSION(:) :: CompSetPtEquip
 
 REAL(r64) :: deviationFromSetPtThresholdHtg = -0.2d0   ! heating threshold for reporting setpoint deviation
 REAL(r64) :: deviationFromSetPtThresholdClg = 0.2d0    ! cooling threshold for reporting setpoint deviation
+
+REAL(r64) :: MassFlowControlSignal  !RS: Debugging: Start of an attempt to vary mass flow rate (9/4/14)
 
 LOGICAL,  PUBLIC :: SimAirLoopsFlag            ! True when the air loops need to be (re)simulated
 LOGICAL,  PUBLIC :: SimElecCircuitsFlag        ! True when electic circuits need to be (re)simulated

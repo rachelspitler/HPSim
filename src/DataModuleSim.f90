@@ -501,6 +501,8 @@ TYPE EvapOutlet
     REAL EOutWtAl
     REAL EOutWtCu
     REAL EOutErrFlag
+    REAL AirEnth    !RS: Debugging: Setting to pass out the exiting air enthalpy in the output file (10/29/19) !RS: Debugging: I think that should be (10/29/16)
+    REAL AirHumRat  !RS: Debugging: Setting to pass out the exiting air humidity ratio in the output file (10/29/19) !RS: Debugging: I think that should be (10/29/16)
 END TYPE EvapOutlet
 
 TYPE(EvapOutlet) :: EvapOUT
@@ -813,5 +815,20 @@ END TYPE TXVOutput !Parameters
 
 TYPE(TXVOutput) :: TXVOUT !RS: Changing this from TXVPar to TVXOUT
 INTEGER, SAVE:: TXVQ=1
+
+TYPE FanData
+    REAL HumRat
+    REAL RhoAir
+    REAL MotorEff
+    REAL FanEff
+    REAL DeltaPress
+    REAL MotInAirFrac
+    REAL Power
+END TYPE FanData
+
+TYPE(FanData) :: FanOut
+TYPE(FanData) :: FanOutE
+
+REAL, SAVE :: inputratio    !RS: The compressor capacity ratio for use in the new compressor model (10/3/14)
 
 END MODULE DataSimulation

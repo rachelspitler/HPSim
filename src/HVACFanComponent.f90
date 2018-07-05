@@ -185,7 +185,7 @@ Private SimSimpleFan
 Private SimVariableVolumeFan
 Private SimZoneExhaustFan
 Private SimComponentModelFan !cpw22Aug2010
-
+Private SimOffFan   !RS: Secret Search String - "Off" fan when being modeled by HPSim (7/29/17)
 
           ! Update routine to check convergence and update nodes
 Private UpdateFan
@@ -374,11 +374,13 @@ SUBROUTINE GetFanInput
     INTEGER :: NumVarVolFan ! The number of Simple Variable Vol Fans
     INTEGER :: NumOnOff     ! The number of Simple on-off Fans
     INTEGER :: NumZoneExhFan
+    INTEGER :: NumOffFan    !RS: The number of fans scheduled as off; HPSim coupling (7/29/17)
     INTEGER :: SimpFanNum
     INTEGER :: OnOffFanNum
     INTEGER :: VarVolFanNum
     INTEGER :: ExhFanNum
     INTEGER :: NVPerfNum
+    INTEGER :: OffFanNum   !RS: The number of fans scheduled as off; HPSim coupling (7/29/17)
     LOGICAL :: NVPerfFanFound
     INTEGER :: NumCompModelFan ! cpw22Aug2010 The number of Component Model Fans
     INTEGER :: CompModelFanNum ! cpw22Aug2010 Component Model Fan index
@@ -442,7 +444,14 @@ SUBROUTINE GetFanInput
       MaxAlphas=MAX(MaxAlphas,NumAlphas)
       MaxNumbers=MAX(MaxNumbers,NumNums)
     ENDIF
-
+    !RS: Secret Search String - Intiliazing the no-fan case (fan is modeled by HPSim) (7/29/17)
+    NumOffFan   = GetNumObjectsFound('Fan:Off')
+    IF (NumOffFan > 0) THEN
+      CALL GetObjectDefMaxArgs('Fan:Off',NumParams,NumAlphas,NumNums)
+      MaxAlphas=MAX(MaxAlphas,NumAlphas)
+      MaxNumbers=MAX(MaxNumbers,NumNums)
+    ENDIF
+    
     ALLOCATE(cAlphaArgs(MaxAlphas))
     cAlphaArgs=' '
     ALLOCATE(cAlphaFieldNames(MaxAlphas))
@@ -456,7 +465,7 @@ SUBROUTINE GetFanInput
     ALLOCATE(rNumericArgs(MaxNumbers))
     rNumericArgs=0.0
 
-    NumFans = NumSimpFan + NumVarVolFan + NumZoneExhFan + NumOnOff + NumCompModelFan ! cpw1Mar2010 Add NumCompModelFan
+    NumFans = NumSimpFan + NumVarVolFan + NumZoneExhFan + NumOnOff + NumCompModelFan + NumOffFan ! cpw1Mar2010 Add NumCompModelFan  !RS: Modified to add in the "Off Fan" option (7/29/17)
     IF (NumFans > 0) THEN
       ALLOCATE(Fan(NumFans))
     ENDIF
@@ -848,6 +857,67 @@ SUBROUTINE GetFanInput
           CALL ShowWarningError(TRIM(cCurrentModuleObject)//'="'//TRIM(Fan(FanNum)%FanName)//  &
              '" has specified 0.0 max air flow rate. It will not be used in the simulation.')
         ENDIF
+
+    !RS: Secret Search String - Modifying a routine for the case where the fan is modeled by HPSim (7/29/17)
+    DO OffFanNum = 1,  NumOffFan
+        FanNum = OffFanNum
+        cCurrentModuleObject= 'Fan:Off'
+        CALL GetObjectItem(TRIM(cCurrentModuleObject),SimpFanNum,cAlphaArgs,NumAlphas, &
+                           rNumericArgs,NumNums,IOSTAT, &
+                           NumBlank=lNumericFieldBlanks,AlphaBlank=lAlphaFieldBlanks, &
+                           AlphaFieldNames=cAlphaFieldNames,NumericFieldNames=cNumericFieldNames)
+        IsNotOK=.false.
+        IsBlank=.false.
+        CALL VerifyName(cAlphaArgs(1),Fan%FanName,FanNum-1,IsNotOK,IsBlank,TRIM(cCurrentModuleObject)//' Name')
+        IF (IsNotOK) THEN
+          ErrorsFound=.true.
+          IF (IsBlank) cAlphaArgs(1)='xxxxx'
+        ENDIF
+        Fan(FanNum)%FanName  = cAlphaArgs(1)
+        Fan(FanNum)%FanType =  cCurrentModuleObject
+        Fan(FanNum)%Schedule = cAlphaArgs(2)
+        Fan(FanNum)%SchedPtr = GetScheduleIndex(cAlphaArgs(2))
+        IF (Fan(FanNum)%SchedPtr == 0) THEN
+          IF (lAlphaFieldBlanks(2)) THEN
+            CALL ShowSevereError(RoutineName//TRIM(cCurrentModuleObject)//': '//TRIM(cAlphaFieldNames(2))//  &
+                 ' is required, missing for '//TRIM(cAlphaFieldNames(1))//'='//TRIM(cAlphaArgs(1)))
+          ELSE
+            CALL ShowSevereError(RoutineName//TRIM(cCurrentModuleObject)//': invalid '//TRIM(cAlphaFieldNames(2))//  &
+               ' entered ='//TRIM(cAlphaArgs(2))// &
+               ' for '//TRIM(cAlphaFieldNames(1))//'='//TRIM(cAlphaArgs(1)))
+          END IF
+          ErrorsFound=.true.
+        END IF
+!        Fan(FanNum)%Control = 'CONSTVOLUME'
+        Fan(FanNum)%FanType_Num=FanType_SimpleConstVolume
+
+        Fan(FanNum)%FanEff        = rNumericArgs(1)
+        Fan(FanNum)%DeltaPress    = rNumericArgs(2)
+        Fan(FanNum)%MaxAirFlowRate= rNumericArgs(3)
+        IF (Fan(FanNum)%MaxAirFlowRate == 0.0) THEN
+          CALL ShowWarningError(TRIM(cCurrentModuleObject)//'="'//TRIM(Fan(FanNum)%FanName)//  &
+             '" has specified 0.0 max air flow rate. It will not be used in the simulation.')
+        ENDIF
+        Fan(FanNum)%MotEff        = rNumericArgs(4)
+        Fan(FanNum)%MotInAirFrac  = rNumericArgs(5)
+        Fan(FanNum)%MinAirFlowRate= 0.0
+
+        Fan(FanNum)%InletNodeNum  = &
+               GetOnlySingleNode(cAlphaArgs(3),ErrorsFound,TRIM(cCurrentModuleObject),cAlphaArgs(1),  &
+                            NodeType_Air,NodeConnectionType_Inlet,1,ObjectIsNotParent)
+        Fan(FanNum)%OutletNodeNum = &
+               GetOnlySingleNode(cAlphaArgs(4),ErrorsFound,TRIM(cCurrentModuleObject),cAlphaArgs(1),  &
+                            NodeType_Air,NodeConnectionType_Outlet,1,ObjectIsNotParent)
+
+        IF (NumAlphas > 4) THEN
+          Fan(FanNum)%EndUseSubcategoryName = cAlphaArgs(5)
+        ELSE
+          Fan(FanNum)%EndUseSubcategoryName = 'General'
+        END IF
+
+        CALL TestCompSet(TRIM(cCurrentModuleObject),cAlphaArgs(1),cAlphaArgs(3),cAlphaArgs(4),'Air Nodes')
+
+      END DO   ! end Number of Off Fan loop
         Fan(FanNum)%MinAirFlowRate= rNumericArgs(2)
 
         Fan(FanNum)%FanSizingFactor = rNumericArgs(3)    ! Fan max airflow sizing factor [-] cpw31Aug2010
@@ -1611,7 +1681,8 @@ SUBROUTINE SimSimpleFan(FanNum)
       REAL(r64) FanShaftPower ! power delivered to fan shaft
       REAL(r64) PowerLossToAir ! fan and motor loss to air stream (watts)
       Integer NVPerfNum
-
+      REAL(r64) SchedTestValue  !RS: Secret Search String - Trying to figure out why schedule isn't always off as set (7/29/17)
+      
    NVPerfNum  = Fan(FanNum)%NVPerfNum
 
    IF (NightVentOn .AND. NVPerfNum > 0) THEN
@@ -1638,6 +1709,8 @@ SUBROUTINE SimSimpleFan(FanNum)
    MassFlow   = MIN(MassFlow,Fan(FanNum)%MaxAirMassFlowRate)
    MassFlow   = MAX(MassFlow,Fan(FanNum)%MinAirMassFlowRate)
    !
+   SchedTestValue=GetCurrentScheduleValue(Fan(FanNum)%SchedPtr) !RS: Trying to determine why fan isn't always off when schedule is set to 0 (7/29/17)
+   LocalTurnFansOn = 0  !RS: Hardcoding E+ fan off for now (7/29/17)
    !Determine the Fan Schedule for the Time step
   If( ( GetCurrentScheduleValue(Fan(FanNum)%SchedPtr)>0.0 .or. LocalTurnFansOn) &
         .and. .NOT.LocalTurnFansOff  .and. Massflow>0.0) Then
@@ -1669,6 +1742,72 @@ SUBROUTINE SimSimpleFan(FanNum)
  RETURN
 END SUBROUTINE SimSimpleFan
 
+SUBROUTINE SimOffFan(FanNum)
+!RS: Secret Search String (7/29/17)
+!RS: Creating a fan model that's just off for coupling to HPSim, where HPSim sets the mass flow rate of the air and models the fan (7/29/17)
+          ! SUBROUTINE INFORMATION:
+          !       AUTHOR         Unknown
+          !       DATE WRITTEN   Unknown
+          !       MODIFIED       Brent Griffith, May 2009, added EMS override
+          !                      Chandan Sharma, March 2011, FSEC: Added LocalTurnFansOn and LocalTurnFansOff
+          !       RE-ENGINEERED  na
+
+          ! PURPOSE OF THIS SUBROUTINE:
+          ! This subroutine simulates the simple constant volume fan.
+
+          ! METHODOLOGY EMPLOYED:
+          ! Converts design pressure rise and efficiency into fan power and temperature rise
+          ! Constant fan pressure rise is assumed.
+
+          ! REFERENCES:
+          ! ASHRAE HVAC 2 Toolkit, page 2-3 (FANSIM)
+
+          ! USE STATEMENTS:
+          ! na
+
+  IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
+
+          ! SUBROUTINE ARGUMENT DEFINITIONS:
+   Integer, Intent(IN) :: FanNum
+
+          ! SUBROUTINE PARAMETER DEFINITIONS:
+          ! na
+
+          ! INTERFACE BLOCK SPECIFICATIONS
+          ! na
+
+          ! DERIVED TYPE DEFINITIONS
+          ! na
+
+          ! SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+      REAL(r64) RhoAir
+      REAL(r64) DeltaPress  ! [N/m2]
+      REAL(r64) FanEff
+      REAL(r64) MotInAirFrac
+      REAL(r64) MotEff
+      REAL(r64) MassFlow    ! [kg/sec]
+!unused0909      REAL(r64) Tin         ! [C]
+!unused0909      REAL(r64) Win
+      REAL(r64) FanShaftPower ! power delivered to fan shaft
+      REAL(r64) PowerLossToAir ! fan and motor loss to air stream (watts)
+      Integer NVPerfNum
+
+   NVPerfNum  = Fan(FanNum)%NVPerfNum
+
+   !Fan is off and not operating no power consumed and mass flow rate.
+   Fan(FanNum)%FanPower = 0.0
+   FanShaftPower = 0.0
+   PowerLossToAir = 0.0
+   Fan(FanNum)%OutletAirMassFlowRate = 0.0
+   Fan(FanNum)%OutletAirHumRat       = Fan(FanNum)%InletAirHumRat
+   Fan(FanNum)%OutletAirEnthalpy     = Fan(FanNum)%InletAirEnthalpy
+   Fan(FanNum)%OutletAirTemp = Fan(FanNum)%InletAirTemp
+   ! Set the Control Flow variables to 0.0 flow when OFF.
+   Fan(FanNum)%MassFlowRateMaxAvail = 0.0
+   Fan(FanNum)%MassFlowRateMinAvail = 0.0
+
+ RETURN
+END SUBROUTINE SimOffFan
 
 SUBROUTINE SimVariableVolumeFan(FanNum)
 

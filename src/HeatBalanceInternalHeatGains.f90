@@ -220,6 +220,8 @@ SUBROUTINE GetInternalHeatGainsInput
   INTEGER :: ZLItem
   INTEGER :: Item1
 
+    INTEGER :: DebugFile       =150 !RS: Debugging file denotion, hopefully this works.
+
           ! FLOW:
   ALLOCATE(ZoneIntGain(NumOfZones))
   ALLOCATE(ZnRpt(NumOfZones))
@@ -229,6 +231,8 @@ SUBROUTINE GetInternalHeatGainsInput
   ALLOCATE(RepVarSet(NumOfZones))
   RepVarSet=.true.
 
+  OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging
+  
   ! Determine argument length of objects gotten by this routine
   MaxAlpha=-100
   MaxNumber=-100
@@ -540,12 +544,18 @@ SUBROUTINE GetInternalHeatGainsInput
             ENDIF
           ELSEIF (SchMin < 70.0d0 .or. SchMax > 1000.0d0) THEN
             IF (Item1 == 1) THEN
-              CALL ShowWarningError(RoutineName//TRIM(CurrentModuleObject)//'='//TRIM(AlphaName(1))//  &
-                                   '", '//TRIM(cAlphaFieldNames(5))//' values')
-              CALL ShowContinueError('fall outside typical range [70,1000] W/person for Thermal Comfort Reporting.')
-              CALL ShowContinueError('Schedule="'//TRIM(AlphaName(5))//'; Odd comfort values may result. '//  &
+              !CALL ShowWarningError(RoutineName//TRIM(CurrentModuleObject)//'='//TRIM(AlphaName(1))//  &
+              !                     '", '//TRIM(cAlphaFieldNames(5))//' values')
+              !CALL ShowContinueError('fall outside typical range [70,1000] W/person for Thermal Comfort Reporting.')
+              !CALL ShowContinueError('Schedule="'//TRIM(AlphaName(5))//'; Odd comfort values may result. '//  &
+              !                 'Entered min/max range=['//trim(RoundSigDigits(SchMin,1))//','//  &
+              !                     trim(RoundSigDigits(SchMax,1))//'] W/person.')  !RS: Secret Search String
+              WRITE(DebugFile,*) RoutineName//TRIM(CurrentModuleObject)//'='//TRIM(AlphaName(1))//  &
+                                   '", '//TRIM(cAlphaFieldNames(5))//' values'
+              WRITE(DebugFile,*) 'fall outside typical range [70,1000] W/person for Thermal Comfort Reporting.'
+              WRITE(DebugFile,*) 'Schedule="'//TRIM(AlphaName(5))//'; Odd comfort values may result. '//  &
                                'Entered min/max range=['//trim(RoundSigDigits(SchMin,1))//','//  &
-                                   trim(RoundSigDigits(SchMax,1))//'] W/person.')
+                                   trim(RoundSigDigits(SchMax,1))//'] W/person.'
             ENDIF
           ENDIF
         ENDIF

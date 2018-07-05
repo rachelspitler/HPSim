@@ -98,7 +98,8 @@
     USE DataZoneEnergyDemands   !RS: Debugging: Determining if the zone requires heating or cooling
     USE DataHVACGlobals !RS: Debugging: Small Load and SingleHeatingSetPoint, SingleCoolingSetPoint
     USE DataLoopNode    !RS: Debugging: Bringing in Node array
-    USE PackagedTerminalHeatPump, ONLY: HPSimNodes    !RS: Debugging: Bringing in the inlet nodes
+    !USE PackagedTerminalHeatPump, ONLY: HPSimNodes    !RS: Debugging: Bringing in the inlet nodes
+    USE HVACDXSystem, ONLY: HPSimNodes
     USE DXCoils !RS: Debugging: Bringing in DXCoilHPSimNum
     !USE ZeroConvergence
     
@@ -245,7 +246,7 @@
         QUnitOut1=0
         !LatOutputProvided1=0
         QSensUnitOut1=0
-        CALL HPSimNodes(DXCoilHPSimNum,ReturnNode,OutsideNode) !RS: Debugging: Bringing in the node numbers
+        CALL HPSimNodes(DXCoilHPSimNum,ReturnNode) !,OutsideNode) !RS: Debugging: Bringing in the node numbers
         CALL GetTempsOut(OutDryBulbTemp, OutWetBulbTemp, OutBaroPress, RHiC)
         TaiE=Node(ReturnNode)%Temp 
         DummyHR=Node(ReturnNode)%HumRat 
@@ -266,7 +267,7 @@
         CALL EndEvaporatorCoil
     END IF
 
-    CALL HPSimNodes(DXCoilHPSimNum,ReturnNode,OutsideNode) !RS: Debugging: Bringing in the node numbers
+    CALL HPSimNodes(DXCoilHPSimNum,ReturnNode) !,OutsideNode) !RS: Debugging: Bringing in the node numbers
     CALL GetTempsOut(OutDryBulbTemp, OutWetBulbTemp, OutBaroPress, RHiC)    !RS: Debugging: RHiC = outdoor relative humidity
     !TWiC=OutWetBulbTemp !RS: Debugging: Updating outdoor entering wet bulb temperature
     TaiC=Node(OutsideNode)%Temp !OutDryBulbTemp !RS: Debugging: Updating outdoor entering dry bulb temperature !RS: Debugging: Outside Air Node

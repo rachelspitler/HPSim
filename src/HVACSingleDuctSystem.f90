@@ -404,6 +404,10 @@ SUBROUTINE GetSysInput
     INTEGER                              :: TotalArgs=0       ! Total number of alpha and numeric arguments (max) for a
                                                               !  certain object in the input file
 
+    INTEGER :: DebugFile       =150 !RS: Debugging file denotion, hopefully this works.
+    
+  OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging
+
           ! Flow
     NumVAVSys = GetNumObjectsFound('AirTerminal:SingleDuct:VAV:Reheat')
     NumNoRHVAVSys = GetNumObjectsFound('AirTerminal:SingleDuct:VAV:NoReheat')
@@ -611,11 +615,16 @@ SUBROUTINE GetSysInput
           DO SupAirIn = 1,ZoneEquipConfig(CtrlZone)%NumInletNodes
             IF (Sys(SysNum)%ReheatAirOutletNode .EQ. ZoneEquipConfig(CtrlZone)%InletNode(SupAirIn)) THEN
               IF (ZoneEquipConfig(CtrlZone)%AirDistUnitCool(SupAirIn)%OutNode > 0) THEN
-                CALL ShowSevereError('Error in connecting a terminal unit to a zone')
-                CALL ShowContinueError(TRIM(NodeID(Sys(SysNum)%ReheatAirOutletNode))//' already connects to another zone')
-                CALL ShowContinueError('Occurs for terminal unit '//TRIM(Sys(SysNum)%SysType)//' = '//TRIM(Sys(SysNum)%SysName))
-                CALL ShowContinueError('Check terminal unit node names for errors')
-                ErrorsFound = .true.
+                !CALL ShowSevereError('Error in connecting a terminal unit to a zone')
+                !CALL ShowContinueError(TRIM(NodeID(Sys(SysNum)%ReheatAirOutletNode))//' already connects to another zone')
+                !CALL ShowContinueError('Occurs for terminal unit '//TRIM(Sys(SysNum)%SysType)//' = '//TRIM(Sys(SysNum)%SysName))
+                !CALL ShowContinueError('Check terminal unit node names for errors')
+                !RS: Secret Search String (10/28/14)
+                WRITE(DebugFile,*) 'Error in connecting a terminal unit to a zone'
+                WRITE(DebugFile,*) TRIM(NodeID(Sys(SysNum)%ReheatAirOutletNode)), ' already connects to another zone'
+                WRITE(DebugFile,*) 'Occurs for terminal unit '//TRIM(Sys(SysNum)%SysType)//' = '//TRIM(Sys(SysNum)%SysName)
+                WRITE(DebugFile,*) 'Check terminal unit node names for errors'
+                !ErrorsFound = .true. !RS: Debugging: Trying to get it to allow two HP systems at once (simple & HPSim) (10/28/14)
               ELSE
                 ZoneEquipConfig(CtrlZone)%AirDistUnitCool(SupAirIn)%InNode = Sys(SysNum)%InletNodeNum
                 ZoneEquipConfig(CtrlZone)%AirDistUnitCool(SupAirIn)%OutNode = Sys(SysNum)%ReheatAirOutletNode

@@ -412,7 +412,10 @@ TYPE, PUBLIC :: DXCoilData
   ! VRF system variables used for sizing
   LOGICAL :: CoolingCoilPresent = .TRUE.   ! FALSE if coil not present
   LOGICAL :: HeatingCoilPresent = .TRUE.   ! FALSE if coil not present
-
+  
+  REAL(r64) :: CndFanPwr !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+  REAL(R64) :: CompPwr   !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+  
 END TYPE DXCoilData
 
   ! MODULE VARIABLE DECLARATIONS:
@@ -448,6 +451,10 @@ INTEGER, PRIVATE :: NumDXMulSpeedHeatCoils= 0      ! number of multispeed DX hea
 LOGICAL, ALLOCATABLE, DIMENSION(:) :: CheckEquipName
 
 INTEGER, PUBLIC :: DXCoilHPSimNum = 0  !RS: Implementation: Making another variable for HPSim implementation
+INTEGER, PUBLIC :: DXCoilHPSimNum2 = 0  !RS: Implementation: Making another variable for HPSim implementation (10/31/14)
+REAL, PUBLIC :: WeathOutDryBulb !RS: Debugging: Getting the outside air properties for the HPSim Condenser (11/3/14)
+REAL, PUBLIC :: WeathOutHumRat !RS: Debugging: Getting the outside air properties for the HPSim Condenser (11/3/14)
+REAL, PUBLIC :: WeathOutBaroPress !RS: Debugging: Getting the outside air properties for the HPSim Condenser (11/3/14)
 
   ! SUBROUTINE SPECIFICATIONS FOR MODULE
 
@@ -595,23 +602,45 @@ END IF
 
 CurDXCoilNum = DXCoilNum
 
+IF (HPSimFlag .EQ. 1) THEN  !RS: Implementation: Debugging: Setting up a case when HPSim is called
+    !IF (WarmUpFlag) THEN  !RS: Debugging: Trying to get it to run as a curve-fit model during warmup (8/11/14)
+    !    DXCoil(DXCoilNum)%DXCoilType_Num=CoilDX_CoolingSingleSpeed  !RS: Make sure it's same CASE as in IDF (8/11/14)
+    !ELSE
+    !    DXCoil(DXCoilNum)%DXCoilType_Num=CoilDX_HPSim
+    !END IF
+END IF
+
 ! Initialize the DX coil unit
 CALL InitDXCoil(DXCoilNum)
-
-IF (HPSimFlag .EQ. 1) THEN  !RS: Implementation: Debugging: Setting up a case when HPSim is called
-    DXCoil(DXCoilNum)%DXCoilType_Num=CoilDX_HPSim
-END IF
 
 ! Select the correct unit type
 SELECT CASE(DXCoil(DXCoilNum)%DXCoilType_Num)
 
-  CASE (CoilDX_CoolingSingleSpeed)
+CASE (CoilDX_CoolingSingleSpeed)
 
+    IF (WARMUPFLAG) THEN   
     IF (PRESENT(CoilCoolingHeatingPLRRatio)) THEN
       CALL CalcDoe2DXCoil(DXCoilNum,CompOp,FirstHVACIteration,PartLoadRatio, FanOpMode, &
                           OnOffAirFlowRatio=AirFlowRatio, CoolingHeatingPLR=CoilCoolingHeatingPLRRatio)
     ELSE
       CALL CalcDoe2DXCoil(DXCoilNum,CompOp,FirstHVACIteration,PartLoadRatio, FanOpMode,OnOffAirFlowRatio=AirFlowRatio)
+    END IF
+    ELSE    !RS: Debugging: Trying to handle case when the coil isn't called because it's not needed (12/17/14)
+        IF (CurrentTime .LT. 12 .OR. CurrentTime .GT. 13) THEN    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)    
+            IF (PRESENT(CoilCoolingHeatingPLRRatio)) THEN
+                CALL CalcDoe2DXCoil(DXCoilNum,CompOp,FirstHVACIteration,PartLoadRatio, FanOpMode, &
+                          OnOffAirFlowRatio=AirFlowRatio, CoolingHeatingPLR=CoilCoolingHeatingPLRRatio)
+            ELSE
+                DXCoil(DXCoilNum)%OutletAirEnthalpy=DXCoil(DXCoilNum)%InletAirEnthalpy
+                DXCoil(DXCoilNum)%OutletAirTemp=DXCoil(DXCoilNum)%InletAirTemp
+                DXCoil(DXCoilNum)%OutletAirHumRat=DXCoil(DXCoilNum)%InletAirHumRat
+                DXCoil(DXCoilNum)%TotalCoolingEnergyRate=0  !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
+                DXCoil(DXCoilNum)%SensCoolingEnergyRate=0   !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
+                DXCoil(DXCoilNum)%TotalCoolingEnergy=0  !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
+                DXCoil(DXCoilNum)%ElecCoolingPower=0    !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
+                DXCoil(DXCoilNum)%LatCoolingEnergyRate=0    !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
+            END IF
+        END IF    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)
     END IF
 
   CASE (CoilDX_HeatingEmpirical)
@@ -1249,10 +1278,12 @@ NumDXMulSpeedCoolCoils = GetNumObjectsFound('Coil:Cooling:DX:MultiSpeed')
 NumDXMulSpeedHeatCoils = GetNumObjectsFound('Coil:Heating:DX:MultiSpeed')
 NumVRFCoolingCoils = GetNumObjectsFound(cAllCoilTypes(CoilVRF_Cooling))
 NumVRFHeatingCoils = GetNumObjectsFound(cAllCoilTypes(CoilVRF_Heating))
-DXCoilHPSimNum=GetNumObjectsFound('ZoneHVAC:HPSim')
+DXCoilHPSimNum2=GetNumObjectsFound('ZoneHVAC:HPSim')
+DXCoilHPSimNum=GetNumObjectsFound('Coil:HPSim') !RS: Debugging: Moving to an air loop instead of packaged (10/31/14)
 
 NumDXCoils = NumDoe2DXCoils + NumDXHeatingCoils + NumDXMulSpeedCoils + NumDXMulModeCoils + NumDXHeatPumpWaterHeaterCoils &
-             + NumDXMulSpeedCoolCoils + NumDXMulSpeedHeatCoils + NumVRFCoolingCoils + NumVRFHeatingCoils + DXCoilHPSimNum
+             + NumDXMulSpeedCoolCoils + NumDXMulSpeedHeatCoils + NumVRFCoolingCoils + NumVRFHeatingCoils + DXCoilHPSimNum &
+             + DXCoilHPSimNum2
 
 ! Determine max number of alpha and numeric arguments for all objects being read, in order to allocate local arrays
 CALL GetObjectDefMaxArgs('Coil:Cooling:DX:SingleSpeed',TotalArgs,NumAlphas,NumNumbers)
@@ -4666,8 +4697,9 @@ DO DXCoilIndex = 1, NumVRFHeatingCoils
 
 END DO
 
+!RS: Comment: Looping over HPSim coil 'data'
 CurrentModuleObject='ZoneHVAC:HPSIM'
-DO DXCoilIndex = 1, DXCoilHPSimNum
+DO DXCoilIndex = 1, DXCoilHPSimNum2 !RS: Debugging: Moving to an air loop instead of packaged (10/31/14)
 
   CALL GetObjectItem(TRIM(CurrentModuleObject),DXCoilIndex,Alphas,NumAlphas,Numbers,NumNumbers,IOStatus, &
                      NumBlank=lNumericBlanks,AlphaBlank=lAlphaBlanks, &
@@ -4687,8 +4719,12 @@ DO DXCoilIndex = 1, DXCoilHPSimNum
   !HeatReclaimDXCoil(DXCoilNum)%SourceType = TRIM(CurrentModuleObject)
   !DXCoil(DXCoilNum)%DXCoilType = TRIM(CurrentModuleObject)
   !DXCoil(DXCoilNum)%DXCoilType_Num = CoilDX_CoolingTwoStageWHumControl
+  DXCoil(DXCoilNum)%DXCoilType = Alphas(9) !TRIM(CurrentModuleObject)
+  DXCoil(DXCoilNum)%DXCoilType_Num = CoilDX_HPSim !CoolingSingleSpeed
   DXCoil(DXCoilNum)%Schedule = Alphas(2)
   DXCoil(DXCoilNum)%SchedPtr = GetScheduleIndex(Alphas(2))  ! convert schedule name to pointer
+  DXCoil(DXCoilNum)%RatedTotCap(1) = Numbers(1)
+  !DXCoil(DXCoilNum)%MinOATCompressor=-5 !RS: Debugging: Setting this here to test rather than adding to IDF (8/30/14)
   IF (DXCoil(DXCoilNum)%SchedPtr .EQ. 0) THEN
     IF (lAlphaBlanks(2)) THEN
       CALL ShowSevereError(RoutineName//trim(CurrentModuleObject)//'="'//trim(DXCoil(DXCoilNum)%Name)//'", missing')
@@ -4706,6 +4742,51 @@ DO DXCoilIndex = 1, DXCoilHPSimNum
 
   DXCoil(DXCoilNum)%AirOutNode = &
                GetOnlySingleNode(Alphas(4),ErrorsFound,TRIM(CurrentModuleObject),Alphas(1), &
+               NodeType_Air,NodeConnectionType_Outlet,1,ObjectIsParent) !ObjectIsNotParent)  !RS: Debugging: Trying this...
+END DO
+
+CurrentModuleObject='Coil:HPSim' !ZoneHVAC:HPSIM'
+DO DXCoilIndex = 1, DXCoilHPSimNum  !RS: Debugging: Moving to an air loop instead of packaged (10/31/14)
+
+  CALL GetObjectItem(TRIM(CurrentModuleObject),DXCoilIndex,Alphas,NumAlphas,Numbers,NumNumbers,IOStatus, &
+                     NumBlank=lNumericBlanks,AlphaBlank=lAlphaBlanks, &
+                     AlphaFieldNames=cAlphaFields,NumericFieldNames=cNumericFields)
+
+  DXCoilNum = DXCoilNum+1
+  IsNotOK=.FALSE.
+  IsBlank=.FALSE.
+  CALL VerifyName(Alphas(1),DXCoil%Name,DXCoilNum-1,IsNotOK,IsBlank,TRIM(CurrentModuleObject)//' Name')
+  IF (IsNotOK) THEN
+    ErrorsFound=.true.
+    IF (IsBlank) Alphas(1)='xxxxx'
+  ENDIF
+  DXCoil(DXCoilNum)%Name = Alphas(6) !5) !RS: Debugging: We actually want the "coil" name (4/28/14) !(1)
+! Initialize DataHeatBalance heat reclaim variable name for use by heat reclaim coils
+  !HeatReclaimDXCoil(DXCoilNum)%Name = DXCoil(DXCoilNum)%Name
+  !HeatReclaimDXCoil(DXCoilNum)%SourceType = TRIM(CurrentModuleObject)
+  DXCoil(DXCoilNum)%DXCoilType = Alphas(6) !5) !TRIM(CurrentModuleObject)
+  DXCoil(DXCoilNum)%DXCoilType_Num = CoilDX_HPSim !CoolingSingleSpeed
+  DXCoil(DXCoilNum)%Schedule = Alphas(5) !4) !2)
+  DXCoil(DXCoilNum)%SchedPtr = GetScheduleIndex(Alphas(5)) !4)) !2))  ! convert schedule name to pointer
+  DXCoil(DXCoilNum)%RatedTotCap(1) = Numbers(1)
+  !DXCoil(DXCoilNum)%MinOATCompressor=-5 !RS: Debugging: Setting this here to test rather than adding to IDF (8/30/14)
+  IF (DXCoil(DXCoilNum)%SchedPtr .EQ. 0) THEN
+    IF (lAlphaBlanks(2)) THEN
+      CALL ShowSevereError(RoutineName//trim(CurrentModuleObject)//'="'//trim(DXCoil(DXCoilNum)%Name)//'", missing')
+      CALL ShowContinueError('...required '//trim(cAlphaFields(2))//' is blank.')
+    ELSE
+      CALL ShowSevereError(RoutineName//trim(CurrentModuleObject)//'="'//trim(DXCoil(DXCoilNum)%Name)//'", invalid')
+      CALL ShowContinueError('...'//TRIM(cAlphaFields(2))//'="'//TRIM(Alphas(2))//'".')
+    END IF
+    ErrorsFound=.TRUE.
+  END IF
+
+  DXCoil(DXCoilNum)%AirInNode = &
+               GetOnlySingleNode(Alphas(2),ErrorsFound,TRIM(CurrentModuleObject),Alphas(1), &
+               NodeType_Air,NodeConnectionType_Inlet,1,ObjectIsParent) !ObjectIsNotParent)  !RS: Debugging: Trying this...
+
+  DXCoil(DXCoilNum)%AirOutNode = &
+               GetOnlySingleNode(Alphas(3),ErrorsFound,TRIM(CurrentModuleObject),Alphas(1), &
                NodeType_Air,NodeConnectionType_Outlet,1,ObjectIsParent) !ObjectIsNotParent)  !RS: Debugging: Trying this...
 END DO
 
@@ -5066,6 +5147,34 @@ DO DXCoilNum=NumDoe2DXCoils + NumDXHeatingCoils + NumDXMulSpeedCoils + NumDXMulM
   CALL SetupOutputVariable('DX Heating Coil Runtime Fraction',DXCoil(DXCoilNum)%HeatingCoilRuntimeFraction,'System','Average',&
                            DXCoil(DXCoilNum)%Name)
 END DO
+
+!RS: Debugging: Adding in HPSim energy reporting (12/15/14)
+DO DXCoilNum=NumDoe2DXCoils + NumDXHeatingCoils + NumDXMulSpeedCoils + NumDXMulModeCoils + NumDXHeatPumpWaterHeaterCoils+ &
+             NumDXMulSpeedCoolCoils + NumDXMulSpeedHeatCoils + NumVRFCoolingCoils + NumVRFHeatingCoils + 1, &
+   NumDoe2DXCoils + NumDXHeatingCoils + NumDXMulSpeedCoils + NumDXMulModeCoils + NumDXHeatPumpWaterHeaterCoils &
+             + NumDXMulSpeedCoolCoils + NumDXMulSpeedHeatCoils + NumVRFCoolingCoils + NumVRFHeatingCoils + DXCoilHPSimNum !2
+    
+  CALL SetupOutputVariable('DX Coil Total Cooling Rate[W]',DXCoil(DXCoilNum)%TotalCoolingEnergyRate,'System','Average',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Coil Total Cooling Energy[J]',DXCoil(DXCoilNum)%TotalCoolingEnergy,'System','Sum',&
+                           DXCoil(DXCoilNum)%Name, &
+                           ResourceTypeKey='ENERGYTRANSFER',EndUseKey='COOLINGCOILS',GroupKey='System')
+  CALL SetupOutputVariable('DX Coil Sensible Cooling Rate[W]',DXCoil(DXCoilNum)%SensCoolingEnergyRate,'System','Average',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Coil Sensible Cooling Energy[J]',DXCoil(DXCoilNum)%SensCoolingEnergy,'System','Sum',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Coil Latent Cooling Rate[W]',DXCoil(DXCoilNum)%LatCoolingEnergyRate,'System','Average',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Coil Latent Cooling Energy[J]',DXCoil(DXCoilNum)%LatCoolingEnergy,'System','Sum',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Cooling Coil Electric Power[W]',DXCoil(DXCoilNum)%ElecCoolingPower,'System','Average',&
+                           DXCoil(DXCoilNum)%Name)
+  CALL SetupOutputVariable('DX Cooling Coil Electric Consumption[J]',DXCoil(DXCoilNum)%ElecCoolingConsumption,'System','Sum',&
+                           DXCoil(DXCoilNum)%Name, &
+                           ResourceTypeKey='Electric',EndUseKey='COOLING',GroupKey='System')
+
+END DO
+             
 IF (AnyEnergyManagementSystemInModel) THEN
   ! setup EMS sizing actuators for single speed DX
   DO DXCoilNum=1,NumDOE2DXCoils
@@ -8027,7 +8136,16 @@ SUBROUTINE CalcHPSimDXCoil(CompOp,FirstHVACIteration,PartLoadRatio,FanOpMode,Per
   USE DataHVACGlobals, ONLY: HPWHCrankcaseDBTemp, TimeStepSys, SysTimeElapsed
   USE General,         ONLY: TrimSigDigits, RoundSigDigits, CreateSysTimeIntervalString
   USE DataWater,       ONLY: WaterStorage
+  USE HVACInterfaceManager  !RS: Debugging: Testing to see if UpdateHVACInterface needs to be called (8/8/14)
+  USE PackagedTerminalHeatPump !, ONLY: PTUnitHPSimNum    !RS: Debugging: Trying to bring this over so Abhijit's code works (10/15/14)
+  USE WeatherManager    !RS: Debugging: Trying to bring this over so Abhijit's code works (10/15/14)
+  USE HVACDXSystem  !RS: Debugging: Trying to bring over the coil inputs and outputs (11/1/14)
+  USE DataZoneEnergyDemands !RS: Debugging: Trying to get it only call HPSim and optimization when there's a load (11/6/14)
+  USE DataHeatBalFanSys, ONLY: ZoneThermostatSetPointHi, ZoneThermostatSetPointLo   !RS: Debugging: Trying to keep a constant setpoint (12/5/15)
 
+  USE dfwin !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+  USE dflib !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+  
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
 
           ! SUBROUTINE ARGUMENT DEFINITIONS:
@@ -8120,8 +8238,102 @@ REAL(r64) :: DXcoolToHeatPLRRatio    ! ratio of cooling PLR to heating PLR, used
 REAL(r64) :: HeatRTF                 ! heating coil part-load ratio, used for cycling fan RH control
 REAL(r64) :: HeatingCoilPLF          ! heating coil PLF (function of PLR), used for cycling fan RH control
 INTEGER :: DebugFile       =150 !RS: Debugging file denotion, hopefully this works.
+INTEGER :: InletNode, OutletNode    !RS: Debugging: UpdateHVACInterface (8/8/14)
+
+LOGICAL :: file_exists  !RS: Debugging: Setting this in for AT's modification below (10/6/14)
+REAL :: RhoOutAir   !RS: Debugging: Evaporator outlet air density
+
+!RS: Comment: The following definitions were put in by Abhijit (10/15/14)
+INTEGER :: MixedNode !=0
+    INTEGER :: OutsideNode !=0    
+    REAL :: RHiCAct !=0.0      
+    REAL :: TaiC  ! =0.0!RS: Drybulb Temperature, Outdoor Entering (C)
+    REAL :: TaiE  ! =0.0!RS: Drybulb Temperature, Indoor Entering (C)
+    REAL :: OutDryBulbTemp !=0.0
+    REAL :: OutWetBulBTemp !=0.0 !RS: Wetbulb temperature, Outdoor (C)
+    REAL :: DummyHROutSideNode !=0.0 !RS: Debugging
+    REAL :: DummyHR !=0.0!RS: Debugging
+    REAL(r64) :: OutBaroPressAT
+    REAL :: XMaE
+    integer :: ok
+    real :: x
+    character(len=90) :: name
+    REAL :: RHiE
+    REAL TWiC
+    REAL TWiE
+    CHARACTER(LEN=*), PARAMETER :: & XMaEL = ",! XMaE"
+    CHARACTER(LEN=*), PARAMETER :: & OutDryBulbTempL = ",! OutDryBulbTemp"
+    CHARACTER(LEN=*), PARAMETER :: & OutWetBulBTempL = ",! OutWetBulBTemp"
+    CHARACTER(LEN=*), PARAMETER :: & OutBaroPressATL = ",! OutBaroPress"
+    CHARACTER(LEN=*), PARAMETER :: & RHiCActL = ",! RHiCAct"
+    CHARACTER(LEN=*), PARAMETER :: & RHiEL = ",! RHiE"
+    CHARACTER(LEN=*), PARAMETER :: & TaiCL = ",! TaiC"
+    CHARACTER(LEN=*), PARAMETER :: & TaiEL = ";! TaiE"
+    CHARACTER(LEN=*), PARAMETER :: & TWiCL = ",! TWiC"
+    CHARACTER(LEN=*), PARAMETER :: & TWiEL = ",! TWiE"
+    CHARACTER(LEN=*), PARAMETER :: & DummyHROutSideNodeL = ",! DummyHROutSideNode"
+    CHARACTER(LEN=*), PARAMETER :: & DummyHRMixedL = ";! DummyHRMixed"
+    CHARACTER(LEN=*), PARAMETER :: & VariablesToPass = "VariablesToPass,"
+    CHARACTER(LEN=500) :: & FolderPath
+    integer :: i
+    CHARACTER(Len=200), dimension(30) :: arr
     
+    integer,dimension(8) :: t ! arguments for date_and_time
+    integer :: s1,s2,ms1,ms2  ! start and end times [ms]
+    real :: dt                ! desired sleep interval [ms]
+    
+    REAL ::    totalPowerVal
+    REAL ::    compressorPowerVal
+    REAL ::    volumetricFlowrateVal
+    REAL ::    dryBulbTemperatureVal
+    REAL ::    enthalpyVal
+    REAL ::    humidityRatioVal
+    REAL ::    QTotalVal
+    REAL ::    QSensVal
+    integer :: ios = 0
+    integer :: pos
+    character(len=200)           :: newDirPath
+    character(len=256)           :: mkdirCmd
+    logical                      :: dirExists
+    INTEGER :: temp !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    LOGICAL :: result2  !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    REAL :: Superheat_Comp  !RS: Debugging: Keeping track of the compressor superheat for HPSim (5/25/15)
+    REAL :: Subcool_ExpDev  !RS: Debugging: Keeping track of the expansion device subcool for HPSim (5/25/15)
+    REAL :: Subcool_Cond    !RS: Debugging: Keeping track of the condenser subcool for HPSim (5/25/15)
+    REAL :: Superheat_Evap  !RS: Debugging: Keeping track of the evaporator superheat for HPSim (5/25/15)
+    REAL :: TsiCmp  !RS: Debugging: Keeping track of the compressor suction saturation temperature for HPSim (5/25/15)
+    REAL :: TsoCmp  !RS: Debugging: Keeping track of the compressor discharge saturation temperature for HPSim (5/25/15)
+    REAL :: Qevap   !RS: Debugging: The cooling needed to cool the zone (total) (10/10/15)
+    REAL :: Qzone   !RS: Debugging: The cooling needed to bring the zone air to deck temperature (10/10/15)
+    REAL :: QtoSP   !RS: Debugging: The cooling needed to bring the zone air to set point (10/10/15)
+    REAL :: cpair
+    CHARACTER(LEN=14),PARAMETER :: FMT_101 = "(7(F10.3,','))"
+    CHARACTER(LEN=14),PARAMETER :: FMT_102 = "(2(F10.5,','))"
+    REAL :: CompRatio   !RS: Debugging: Keeping track of the compressor ratio for HPSim (5/25/15)
+    REAL :: OutTemp_Current !RS: Debugging: Current timestep's outdoor temperature (DB) (3/10/18)
+    REAL :: OutTemp_Previous  !RS: Debugging: Previous timestep's outdoor temperature (DB) (3/10/18)
+    REAL :: InDTemp_Current !RS: Debugging: Current timestep's indoor temperature (DB) (3/10/18)
+    REAL :: InDTemp_Previous    !RS: Debugging: Previous timestep's indoor temperature (DB) (3/10/18)
+    REAL :: InWTemp_Current !RS: Debugging: Current timestep's indoor temperature (WB) (3/10/18)
+    REAL :: InWTemp_Previous    !RS: Debugging: Previous timestep's indoor temperature (WB) (3/10/18)
+    INTEGER, SAVE :: HPSimCounter   !RS: Debugging: Counter for how often HPSim is called in a run (4/28/18)
+       
+!, only: getcharqq, nargs
+    !implicit none
+    CHARACTER*(MAX_PATH) path   !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    TYPE (T_STARTUPINFO) :: StartupInfo !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    TYPE (T_PROCESS_INFORMATION) :: ProcessInfo !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    INTEGER ret, path_len   !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    CHARACTER*1 cret    !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+        
+    CHARACTER(100) ::  path_1, path_2, StrScalar, fullname !path,
+REAL a,b2,c,path_2_len,  path_1_len !path_len,i,
+    
+    OPEN(unit=107,file='C:\Users\lab303user\Documents\betsrg_dual\GenOpt\Qevap_E+.txt')  !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
     OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging
+    OPEN(unit=151,file='HPSim_temps.csv')   !RS: Debugging: Keeping track of the temperatures for HPSim (5/25/15)
+    OPEN(unit=152,file='HPSim_comprat.csv')   !RS: Debugging: Keeping track of the compressor ratio for HPSim (9/12/15)
+
 
 ! If Performance mode not present, then set to 1.  Used only by Multimode/Multispeed DX coil (otherwise mode = 1)
 IF (PRESENT(PerfMode)) THEN
@@ -8162,47 +8374,14 @@ DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction = 0.0d0
 DXCoil(DXCoilHPSimNum)%PartLoadRatio              = 0.0d0
 DXCoil(DXCoilHPSimNum)%BasinHeaterPower           = 0.0d0
 
-!IF (DXCoil(DXCoilNum)%CondenserType(Mode) /= WaterHeater) THEN
-!  IF (DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode) /= 0) THEN
-!    OutdoorDryBulb  = Node(DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode))%Temp
-!    OutdoorHumRat   = Node(DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode))%HumRat
-!    OutdoorPressure = Node(DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode))%Press
-!    OutdoorWetBulb  = Node(DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode))%OutAirWetBulb
-!  ELSE
-    OutdoorDryBulb  = OutDryBulbTemp
-    OutdoorHumRat   = OutHumRat
-    OutdoorPressure = OutBaroPress
-    OutdoorWetBulb  = OutWetBulbTemp
-!  ENDIF
-!ELSE
-  !IF (DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode) /= 0) THEN
-  !  OutdoorPressure = Node(DXCoil(DXCoilNum)%CondenserInletNodeNum(Mode))%Press
-  !ELSE
-  !  OutdoorPressure = OutBaroPress
-  !ENDIF
-!END IF
+OutdoorDryBulb  = OutDryBulbTemp
+OutdoorHumRat   = OutHumRat
+OutdoorPressure = OutBaroPress
+OutdoorWetBulb  = OutWetBulbTemp
 
-!IF (DXCoil(DXCoilNum)%CondenserType(Mode) == AirCooled) THEN
-!  CondInletTemp   = OutdoorDryBulb ! Outdoor dry-bulb temp
-!  CompAmbTemp     = OutdoorDryBulb
-!ELSEIF (DXCoil(DXCoilNum)%CondenserType(Mode) == EvapCooled) THEN
-!  RhoAir          = PsyRhoAirFnPbTdbW(OutdoorPressure,OutdoorDryBulb,OutdoorHumRat)
-!  CondAirMassFlow =  RhoAir * DXCoil(DXCoilNum)%EvapCondAirFlow(Mode)
-! ! (Outdoor wet-bulb temp from DataEnvironment) + (1.0-EvapCondEffectiveness) * (drybulb - wetbulb)
-!  CondInletTemp   = OutdoorWetBulb + (OutdoorDryBulb-OutdoorWetBulb)*(1.0d0 - DXCoil(DXCoilNum)%EvapCondEffect(Mode))
-!  CondInletHumrat = PsyWFnTdbTwbPb(CondInletTemp,OutdoorWetBulb,OutdoorPressure)
-!  CompAmbTemp     = CondInletTemp
-!ELSEIF (DXCoil(DXCoilNum)%CondenserType(Mode) == WaterHeater) THEN
-!  CompAmbTemp     = HPWHCrankcaseDBTemp ! Temperature at HP water heater compressor
-!END IF
-
-! Initialize crankcase heater, operates below OAT defined in input deck for HP DX cooling coil
-! If used in a heat pump, the value of MaxOAT in the heating coil overrides that in the cooling coil (in GetInput)
-!IF (CompAmbTemp .LT. DXCoil(DXCoilNum)%MaxOATCrankcaseHeater)THEN
-!  CrankcaseHeatingPower = DXCoil(DXCoilNum)%CrankcaseHeaterCapacity
-!ELSE
-!  CrankcaseHeatingPower = 0.0
-!END IF
+!RS: Debugging: Trying to have HPSim only called when it needs to be (3/17/18)
+OutTemp_Current = WeathOutDryBulb
+InDTemp_Current = DXCoil(DXCoilHPSimNum)%InletAirTemp
 
 ! calculate end time of current time step to determine if error messages should be printed
 CurrentEndTime = CurrentTime + SysTimeElapsed
@@ -8260,10 +8439,25 @@ DXCoil(DXCoilHPSimNum)%CurrentEndTimeLast = CurrentEndTime
 DXCoil(DXCoilHPSimNum)%PrintLowAmbMessage = .FALSE.
 DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
 
+!RS: Debugging: Resetting AirMassFlow because EMS case has it resetting to 0 when line 8465 is executed (7/16/16)
+AirMassFlow         = DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate * (1.d0-BypassFlowFraction)
+
+!RS: Debugging: Trying to have HPSim only called when it needs to be (3/17/18)
+IF(OutTemp_Current .EQ. OutTemp_Previous .AND. InDTemp_Current .EQ. InDTemp_Previous) THEN
+    InDTemp_Previous = InDTemp_Current  !RS: Debugging: This doesn't do anything but this IF statement keeps the Python program (3/17/18)
+    !RS: Debugging: con. from being called if we don't need it. (3/17/18)
+
 !IF((AirMassFlow .GT. 0.0) .AND. &
 !   (GetCurrentScheduleValue(DXCoil(DXCoilHPSimNum)%SchedPtr) .GT. 0.0 .OR. &
 !    DXCoil(DXCoilHPSimNum)%DXCoilType_Num .EQ. CoilDX_HeatPumpWaterHeater) .AND. &
 !   (PartLoadRatio .GT. 0.0) .AND. (CompOp == On)) THEN      ! for cycling fan, reset mass flow to full on rate
+!RS: Debugging: Trying to reflect only what HPSim actually needs to be considered on (11/21/15)
+!RS: Debugging: con. 
+!IF((AirMassFlow .GT. 0.0) .AND. &  !RS: Debugging: Trying to have HPSim only called when it needs to be - turning IF to ELSEIF (3/17/18)
+ELSEIF((AirMassFlow .GT. 0.0) .AND. &
+   (GetCurrentScheduleValue(DXCoil(DXCoilHPSimNum)%SchedPtr) .GT. 0.0) .AND. &
+   !((Node(9)%TempSetPoint .LT. Node(12)%Temp))) THEN !InletAirDryBulbTemp))) THEN      ! for cycling fan, reset mass flow to full on rate
+   ((ZoneThermostatSetPointHi(1) .LT. Node(12)%Temp))) THEN  !RS: Debugging: Trying to keep a constant setpoint (12/5/15)
   IF (FanOpMode .EQ. CycFanCycCoil) THEN
     AirMassFlow = AirMassFlow / (PartLoadRatio/DXcoolToHeatPLRRatio)
   ELSE IF (FanOpMode .EQ. ContFanCycCoil .AND. &
@@ -8325,6 +8519,7 @@ DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
   !        '" - Air volume flow rate per watt of rated total water heating capacity is out ' //&
   !        'of range error continues...',DXCoil(DXCoilHPSimNum)%ErrIndex1,VolFlowperRatedTotCap,VolFlowperRatedTotCap)
   !END IF
+  
 !
 !    Adjust coil bypass factor for actual air flow rate. Use relation CBF = exp(-NTU) where
 !    NTU = A0/(m*cp). Relationship models the cooling coil as a heat exchanger with Cmin/Cmax = 0.
@@ -8372,7 +8567,7 @@ DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
 !  Get total capacity modifying factor (function of temperature) for off-rated conditions
 !  InletAirHumRat may be modified in this ADP/BF loop, use temporary varible for calculations
    InletAirHumRatTemp = InletAirHumRat
-!50 IF(DXCoil(DXCoilNum)%DXCoilType_Num .EQ. CoilDX_HeatPumpWaterHeater) THEN
+!50 IF(DXCoil(DXCoilHPSimNum)%DXCoilType_Num .EQ. CoilDX_HeatPumpWaterHeater) THEN
 !!    Coil:DX:HeatPumpWaterHeater does not have total cooling capacity as a function of temp or flow curve
 !     TotCapTempModFac = 1.0d0
 !     TotCapFlowModFac = 1.0d0
@@ -8434,11 +8629,290 @@ DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
 !     END IF
 !    END IF
 
-  CALL SimulationCycle(QSens,TotCap,CondInletTemp) !SysLat,TotCap,CondInletTemp)    !RS: SysLat isn't used (1/16/14)
+
+    XMaE=DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate
+    PTUnitHPSimNum=1    !RS: Debugging: Setting this here (11/3/14)
+    CALL HPSimNodes(PTUnitHPSimNum,MixedNode) !,OutsideNode) !RS: Debugging: Bringing in the node numbers
+    !MixedNode=DXCoolingSystem(NumDXSystem)%DXCoolingCoilInletNodeNum
+    !CALL GetTempsOut(OutDryBulbTemp, OutWetBulbTemp, OutBaroPressAT, RHiCAct)
+    
+    TaiC=WeathOutDryBulb !Node(OutsideNode)%Temp
+    DummyHR=WeathOutHumRat !Node(OutsideNode)%HumRat
+    CALL PsyTwbFnTdbWPb2(TaiC,DummyHR,WeathOutBaroPress,TWiC)
+    !CALL PsyRhFnTdbWPb2(TaiC,DummyHR,OutBaroPressAT,RHiC)  !RS: Debugging: Converting from humidity ratio to relative humidity
+    !RHiC=RHiC*100 
+    
+    TaiE = DXCoil(DXCoilHPSimNum)%InletAirTemp
+    DummyHR=DXCoil(DXCoilHPSimNum)%InletAirHumRat 
+    CALL PsyTwbFnTdbWPb2(TaiE,DummyHR,WeathOutBaroPress,TWiE)
+    !CALL PsyRhFnTdbWPb2(TaiE,DummyHR,OutBaroPressAT,RHiE)  !RS: Debugging: Converting from humidity ratio to relative humidity
+    !RHiE=RHiE*100 
+    OutBaroPressAT=WeathOutBaroPress
+    
+    !RS: Debugging: Calculating the total Q needed by the zones (10/10/15)
+    cpair=PsyCpAirFnWTdb(DXCoil(DXCoilHPSimNum)%InletAirHumRat,DXCoil(DXCoilHPSimNum)%InletAirTemp)
+    Qzone=DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate *cpair *(Node(ControlPNode)%Temp-DXCoil(DXCoilHPSimNum)%InletAirTemp) !F
+    QtoSP=cpair*DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate*(Node(9)%TempSetPoint - DXCoil(DXCoilHPSimNum)%InletAirTemp) !23C
+    Qevap=Qzone+QtoSP !(WATTS)
+    
+    Qevap=-Qevap/0.2927  !RS: Debugging: Converting to Btu/h for Buffer Program comparison and turning negative (1/16/16)
+    
+    WRITE(107,*)Qevap,Node(9)%TempSetPoint,DXCoil(DXCoilHPSimNum)%InletAirTemp   !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
+    CLOSE(107)
+    
+    ! INQUIRE(FILE="FilePathBufferProgram.txt", EXIST=file_exists)
+    !if (file_exists) THEN
+    !    OPEN (UNIT=580, FILE="FilePathBufferProgram.txt", STATUS="OLD")   ! Current directory
+    !    read(580,'(A)', iostat=ios) FolderPath
+    !    read(580,'(A)', iostat=ios) FolderPath
+    !    CLOSE (UNIT=580)
+    !    FolderPath=TRIM(FolderPath)
+    !    pos = scan(FolderPath, '\')
+    !    FolderPath = TRIM(ADJUSTL(FolderPath(1:pos-1)))
+    !end if
+        
+        path_len = GetModuleFileName (NULL, path, &
+  len(path))
+
+path_1=TRIM(path)
+StrScalar='C:\Users\lab303user\Documents\betsrg_dual\GenOpt\tmp-genopt-run-6'
+
+
+path_1_len=LEN_TRIM(path_1)
+a= INDEX(path, 'Debug',BACK=.FALSE.)
+
+b2=path_len-a
+
+c=path_len-b2
+
+path_2_len=i-7
+path_2=path_1(1:c)
+path_2_len=len(StrScalar)
+a=INDEX(StrScalar, 'tmp-genopt-run')
+path_2=StrScalar(1:(a-2))
+
+FolderPath=path_2
+    
+    !name=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\HPSim_Variables_Template.idf"
+    name=TRIM(FolderPath) // "\HPSim_Variables_Template.idf"
+    open(130,file=name,status='old',iostat=ok,action='write',form='formatted')
+    !print '("file ",A8," opened ok=",I3)', name,ok
+    
+    open(120,file=name,status='old')
+    do i=1,7
+      read(120,'(A)')arr(i)
+    end do
+    close(120)
+
+    ! do i=1,7
+    !  read(12,'(A)') line
+    !  write(1,'(A)') line
+    !end do
+    !close(12)
+    
+    do i=1,7
+      write(130,'(A)')arr(i)
+    end do
+    
+    !RS: Debugging: Hardcoding the following values ONLY to test the E+/HPSim data flow (10/31/15)
+    !XMaE=0.4532593
+    !WeathOutBaroPress=97900.00
+    !TWiC=22.67
+    !TaiC=34.72
+    !TWiE=19.44
+    !TaiE=26.67
+    !RS: Debugging: The test showed the inputs and outputs passed correctly through (10/31/15)
+    
+    !RS: Debugging: Hardcoding the following values ONLY to test that a constant cooling energy/rate is carried through (11/13/15)
+    !XMaE=0.4532593
+    !WeathOutBaroPress=97900.00
+    !TWiC=17.68352
+    !TaiC=21.03333
+    !TWiE=13.1747
+    !TaiE=24.15519
+    !RS: Debugging: The test showed the constant cooling/temp was correctly brought in/carried through the code (11/13/15 \ 11/14/15)
+    
+    write(130,*) VariablesToPass
+    write(130,*) XMaE , XMaEL
+    !write(1,*) OutWetBulbTemp , OutWetBulbTempL
+    write(130,*) WeathOutBaroPress , OutBaroPressATL
+    write(130,*) TWiC, TWiCL
+    write(130,*) TaiC, TaiCL
+    !write(1,*) DummyHROutSideNode, DummyHROutSideNodeL
+    write(130,*) TWiE, TWiEL
+    write(130,*) TaiE, TaiEL
+    !write(1,*) DummyHRMixed, DummyHRMixedL
+    close(130)
+    
+    !newDirPath=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData"
+    ! inquire( directory=newDirPath, exist=dirExists )         ! Works with ifort, but not gfortran
+    !
+    !
+    !if (dirExists) then
+    !else
+    !    mkdirCmd = 'mkdir "'//trim(newDirPath)//'"'
+    !    write(*,'(a)') "Creating new directory: '"//trim(mkdirCmd)//"'"
+    !    call system( mkdirCmd )
+    !endif
+    !
+    !
+    !
+    !INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\inputValue.txt", EXIST=file_exists)
+    !if (file_exists) THEN
+    !    OPEN (UNIT=555, FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\inputValue.txt", STATUS="OLD")   ! Current directory
+    !    CLOSE (UNIT=555, STATUS="DELETE")
+    !end if
+    !
+    !open(120,file=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\inputValue.txt",status='NEW')   
+    !write(120,*) TaiC
+    !write(120,*) TWiC
+    !!write(1,*) DummyHROutSideNode, DummyHROutSideNodeL
+    !write(120,*) TaiE
+    !write(120,*) TWiE
+    !close(120)
+    
+!IF (ZoneSysEnergyDemand(1)%TotalOutputRequired .NE. 0) THEN !RS: Debugging: Trying to only call optimization and HPSim when there's a load (11/6/14)
+
+!AT : Added in code to run optimization    
+    !INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\GenOpt.log", EXIST=file_exists)
+    !if (file_exists) THEN
+    !    OPEN (UNIT=545, FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\GenOpt.log", STATUS="OLD")   ! Current directory
+    !    CLOSE (UNIT=545, STATUS="DELETE")
+    !end if
+
+    !INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\outputVal.txt", EXIST=file_exists)
+        INQUIRE(FILE=TRIM(FolderPath) // "\\GenOpt\\data_Temp_python\\output.txt", EXIST=file_exists)
+    if (file_exists) THEN
+        !OPEN (UNIT=556, FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\outputVal.txt", STATUS="OLD")   ! Current directory
+        OPEN (UNIT=556, FILE=TRIM(FolderPath) // "\\GenOpt\\data_Temp_python\\output.txt", STATUS="OLD")   ! Current directory
+        CLOSE (UNIT=556, STATUS="DELETE")
+    end if
+    
+    ! INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\exitLoop.txt", EXIST=file_exists)
+    !if (file_exists) THEN
+    !    OPEN (UNIT=556, FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\exitLoop.txt", STATUS="OLD")   ! Current directory
+    !    CLOSE (UNIT=556, STATUS="DELETE")
+    !end if
+    
+    !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
+    
+!    StartupInfo = T_STARTUPINFO(SIZEOF(StartupInfo),&
+!  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+!
+!! Create a new process to run this executable, passing the 
+!! complete executable path and a "-child" switch
+!! as the command line (anything that has two or more tokens), 
+!! and specifying that it should inherit the handles
+!! (including console) of this process.
+!!
+!!ret = CreateProcess (NULL_CHARACTER,  & ! Application Name
+!!	 '"'//path(1:path_len)//'" -child'C, &  ! Command line
+!!	 NULL_SECURITY_ATTRIBUTES, &
+!!	 NULL_SECURITY_ATTRIBUTES, &
+!!	 TRUE, &	! InheritHandles
+!!	 0, &	    ! CreationFlags
+!!	 NULL, & ! Environment variables
+!!	 NULL_CHARACTER, & ! Current directory
+!!	 StartupInfo, &
+!!	 ProcessInfo)
+!     
+!ret = CreateProcess (NULL_CHARACTER,  & ! Application Name
+!	 !'c:\\windows\\system32\\notepad.exe', &  ! Command line
+!     'GenOptExe.exe',& !'C:\Users\Rajesh\Desktop\Coupled HP\\genoptEXE.exe',&
+!     !'C:\\Users\\lab303user\\Documents\\betsrg_dual\\Buffer Program\\HeatPumpSimulator_debug.exe', &
+!	 NULL_SECURITY_ATTRIBUTES, &
+!	 NULL_SECURITY_ATTRIBUTES, &
+!	 TRUE, &	! InheritHandles
+!	 0, &	    ! CreationFlags
+!	 NULL, & ! Environment variables
+!	 NULL_CHARACTER, & ! Current directory
+!	 StartupInfo, &
+!	 ProcessInfo)      
+!
+!if (ret == 0) then
+!  ret = GetLastError ()
+!  write (*,'(A,I0)') "Create process failed with error ",ret
+!else
+!  ! CreateProcess succeeded.  Wait for the process to finish
+!  !
+!  ret = WaitForSingleObject (ProcessInfo%hProcess, INFINITE)
+!
+!  ! Close handles, otherwise resources are lost
+!  !
+!  ret = CloseHandle (ProcessInfo%hThread)
+!  ret = CloseHandle (ProcessInfo%hProcess)
+!  end if
+        
+    !CALL System('GenOptExe.exe')
+    CALL System('Genopt_utility_updated_shared.exe')
+    HPSimCounter = HPSimCounter + 1 !RS: Debugging: Putting in a counter to determine how often HPSim is called (4/28/18)
+    
+    !  do
+    !     INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\GenOpt.log", EXIST=file_exists)
+    !     if (file_exists) exit
+    !     INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\outputVal.txt", EXIST=file_exists)
+    !     if (file_exists) exit
+    !  end do
+    !  
+    !call date_and_time(values=t)
+    !  ms1=(t(5)*3600+t(6)*60+t(7))*1000+t(8)
+    !
+    !  dt = 1000
+    !
+    !  do
+    !    call date_and_time(values=t)
+    !    ms2=(t(5)*3600+t(6)*60+t(7))*1000+t(8)
+    !    if(abs(ms2-ms1)>=dt)exit
+    !    if (ms2==0) exit
+    !  enddo
+      
+    !  CALL SLEEP@(10)
+
+        !INQUIRE(FILE=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\outputVal.txt", EXIST=file_exists)
+        INQUIRE(FILE=TRIM(FolderPath)//'\data_Temp_python\output.txt', EXIST=file_exists)
+         if (file_exists) THEN
+              !open(122,file=TRIM(ADJUSTL(FolderPath(1:pos-1))) // "\\XMLData\\outputVal.txt",status='old')       
+              open(122,file=TRIM(FolderPath)//"\data_Temp_python\output.txt",status='old')          
+              read(122,*)totalPowerVal
+              read(122,*)compressorPowerVal
+              read(122,*)volumetricFlowrateVal
+              read(122,*)dryBulbTemperatureVal
+              read(122,*)enthalpyVal
+              read(122,*)humidityRatioVal
+              read(122,*)QTotalVal
+              read(122,*)QSensVal
+              !read(122,*)Subcool_Cond    !RS: Debugging: Keeping track of the condenser subcool for HPSim (5/25/15)
+              !read(122,*)Subcool_ExpDev  !RS: Debugging: Keeping track of the expansion device subcool for HPSim (5/25/15)
+              !read(122,*)Superheat_Evap  !RS: Debugging: Keeping track of the evaporator superheat for HPSim (5/25/15)
+              !read(122,*)Superheat_Comp  !RS: Debugging: Keeping track of the compressor superheat for HPSim (5/25/15
+              !read(122,*)TsiCmp  !RS: Debugging: Keeping track of the compressor suction saturation temperature for HPSim (5/25/15)
+              !read(122,*)TsoCmp  !RS: Debugging: Keeping track of the compressor discharge saturation temperature for HPSim (5/25/15)
+              read(122,*)CompRatio  !RS: Debugging: Keeping track of the compressor ratio for HPSim (9/12/15)
+            close(122)
+            DXCoil(DXCoilHPSimNum)%OutletAirTemp=(dryBulbTemperatureVal-32)/1.8
+            DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy=enthalpyVal*1000
+            DXCoil(DXCoilHPSimNum)%OutletAirHumRat=humidityRatioVal
+            RhoOutAir=PsyRhoAirFnPbTdbW(OutBaroPressAT,DXCoil(DXCoilHPSimNum)%OutletAirTemp,DXCoil(DXCoilHPSimNum)%OutletAirHumRat)
+            DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate=volumetricFlowrateVal*RhoOutAir*0.472E-3   !RS: Debugging: Actually mass flow rate
+            DXCoil(DXCoilHPSimNum)%ElecCoolingPower=totalPowerVal
+            TotCap=0.2927*QTotalVal
+            QSens=0.2927*QSensVal
+            !WRITE(151,FMT_101)CurrentEndTime,Subcool_Cond,Subcool_ExpDev,Superheat_Evap,Superheat_Comp,TsiCmp,TsoCmp    !RS: Debugging: Keeping track of the temperatures for HPSim (5/25/15)
+            WRITE(152,FMT_101)CurrentEndTime,CompRatio
+         end if
+      
+!     !AT : Added in code to run optimization ---- END
+!ELSE    !RS: Debugging: Setting it so that it doesn't crash if there's no required load (11/15/14)
+!    TotCap=0
+!    Qsens=0
+!END IF  !RS: Debugging: Trying to only call optimization and HPSim when there's a load (11/6/14)
+
+  !CALL SimulationCycle(QSens,TotCap,CondInletTemp) !SysLat,TotCap,CondInletTemp)    !RS: SysLat isn't used (1/16/14)
   
   AirMassFlow = DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate !RS: Debugging: Setting this equal immediately after
   !RS: Debugging: I think that the apparatus properties are calculated with entering conditions
   !RS: Debugging: con. The above can only be set here if the flow is constant throughout the HP
+  Node(4)%MassFlowRate=AirMassFlow  !RS: Debugging: Attempting to set system air flow to the HPSim airflow (8/27/16)
 
 ! Calculate apparatus dew point conditions using TotCap and CBF
   hDelta = TotCap/AirMassFlow
@@ -8470,7 +8944,7 @@ DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
       InletAirWetbulbC = PsyTwbFnTdbWPb(InletAirDryBulbTemp,InletAirHumRatTemp,OutdoorPressure)
       Counter = Counter + 1
 !      IF (ABS(werror) .gt. Tolerance) go to 50   ! Recalculate with modified inlet conditions
-!
+
   END IF
   END IF
 
@@ -8507,7 +8981,6 @@ DXCoil(DXCoilHPSimNum)%PrintLowOutTempMessage = .FALSE.
     END IF
     PLF = 0.7d0
   END IF
-
 
   DXCoil(DXCoilHPSimNum)%PartLoadRatio = PartLoadRatio
   DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction = PartLoadRatio / PLF
@@ -8648,27 +9121,28 @@ END IF
 !  Actual outlet conditions are "average" for time step
 
 ! For multimode coil, if stage-2 operation (modes 2 or 4), return "full load" outlet conditions
-  !IF ((FanOpMode .EQ. ContFanCycCoil) .AND. &
-  !    (Mode .EQ. 1) .OR. (Mode .EQ. 3)) THEN
-  !  ! Continuous fan, cycling compressor
-  !  OutletAirEnthalpy = ((PartLoadRatio * AirFlowRatio)*FullLoadOutAirEnth + &
-  !                                          (1.d0-(PartLoadRatio * AirFlowRatio))*InletAirEnthalpy)
-  !  OutletAirHumRat = ((PartLoadRatio * AirFlowRatio)*FullLoadOutAirHumRat + &
-  !                                          (1.d0-(PartLoadRatio * AirFlowRatio))*InletAirHumRat)
-  !  OutletAirTemp = PsyTdbFnHW(OutletAirEnthalpy,OutletAirHumRat)
-  !ELSE
-  !  ! Default to cycling fan, cycling compressor
-  !  ! Also return this result for stage 2 operation of multimode coil
-  !  ! Cycling fan typically provides full outlet conditions. When RH control is used, account for additional
-  !  ! heating run time by using cooling/heating ratio the same as constant fan (otherwise PLRRatio = 1).
-  !  OutletAirEnthalpy = FullLoadOutAirEnth * DXcoolToHeatPLRRatio + InletAirEnthalpy * (1.0d0 - DXcoolToHeatPLRRatio)
-  !  OutletAirHumRat = FullLoadOutAirHumRat * DXcoolToHeatPLRRatio + InletAirHumRat * (1.0d0 - DXcoolToHeatPLRRatio)
-  !  OutletAirTemp = FullLoadOutAirTemp * DXcoolToHeatPLRRatio + InletAirDryBulbTemp * (1.0d0 - DXcoolToHeatPLRRatio)
-  !END IF  
+  IF ((FanOpMode .EQ. ContFanCycCoil) .AND. &
+      (Mode .EQ. 1) .OR. (Mode .EQ. 3)) THEN
+    ! Continuous fan, cycling compressor
+    OutletAirEnthalpy = ((PartLoadRatio * AirFlowRatio)*DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy + & !FullLoadOutAirEnth + &
+                                            (1.d0-(PartLoadRatio * AirFlowRatio))*InletAirEnthalpy)
+    OutletAirHumRat = ((PartLoadRatio * AirFlowRatio)*DXCoil(DXCoilHPSimNum)%OutletAirHumRat + & !FullLoadOutAirHumRat + &
+                                            (1.d0-(PartLoadRatio * AirFlowRatio))*InletAirHumRat)
+    OutletAirTemp = PsyTdbFnHW(OutletAirEnthalpy,OutletAirHumRat)
+    Qsens=Qsens !*PartLoadRatio
+  ELSE
+    ! Default to cycling fan, cycling compressor
+    ! Also return this result for stage 2 operation of multimode coil
+    ! Cycling fan typically provides full outlet conditions. When RH control is used, account for additional
+    ! heating run time by using cooling/heating ratio the same as constant fan (otherwise PLRRatio = 1).
+    OutletAirEnthalpy = FullLoadOutAirEnth * DXcoolToHeatPLRRatio + InletAirEnthalpy * (1.0d0 - DXcoolToHeatPLRRatio)
+    OutletAirHumRat = FullLoadOutAirHumRat * DXcoolToHeatPLRRatio + InletAirHumRat * (1.0d0 - DXcoolToHeatPLRRatio)
+    OutletAirTemp = FullLoadOutAirTemp * DXcoolToHeatPLRRatio + InletAirDryBulbTemp * (1.0d0 - DXcoolToHeatPLRRatio)
+  END IF  
   
   !RS: Implementation: Setting these here because otherwise they're not getting updated
-  OutletAirTemp=DXCoil(DXCoilHPSimNum)%OutletAirTemp
-  OutletAirEnthalpy=DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy
+  !OutletAirTemp=DXCoil(DXCoilHPSimNum)%OutletAirTemp
+  !OutletAirEnthalpy=DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy
 
 ! Check for saturation error and modify temperature at constant enthalpy
    IF(OutletAirTemp .LT. PsyTsatFnHPb(OutletAirEnthalpy,OutdoorPressure,'CalcHPSimDXCoil')) THEN
@@ -8748,11 +9222,11 @@ END IF
   EIR = DXCoil(DXCoilHPSimNum)%RatedEIR(Mode) * EIRFlowModFac * EIRTempModFac
 
 ! For multimode coil, if stage-2 operation (Modes 2 or 4), return "full load" power adjusted for PLF
-  IF (Mode .EQ. 1 .OR. Mode .EQ. 3) THEN
-    DXCoil(DXCoilHPSimNum)%ElecCoolingPower = TotCap * EIR * DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction
-  ELSE
-    DXCoil(DXCoilHPSimNum)%ElecCoolingPower = TotCap * EIR * DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction / PartLoadRatio
-  END IF
+  !IF (Mode .EQ. 1 .OR. Mode .EQ. 3) THEN
+  !  DXCoil(DXCoilHPSimNum)%ElecCoolingPower = TotCap * EIR * DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction
+  !ELSE
+  !  DXCoil(DXCoilHPSimNum)%ElecCoolingPower = TotCap * EIR * DXCoil(DXCoilHPSimNum)%CoolingCoilRuntimeFraction / PartLoadRatio
+  !END IF
 
 ! Reset AirMassFlow to inlet node air mass flow for final total, sensible and latent calculations
 ! since AirMassFlow might have been modified above (in this subroutine):
@@ -8760,18 +9234,22 @@ END IF
 !
 ! For multimode coil, this should be full flow including bypassed fraction
   AirMassFlow = DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate
-  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = AirMassFlow * (InletAirEnthalpy - OutletAirEnthalpy)  !TotCap !RS: Debugging: Which?
+  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = TotCap !*PartLoadRatio !AirMassFlow * (InletAirEnthalpy - OutletAirEnthalpy)  !TotCap !RS: Debugging: Which?
 
 ! Set DataHeatGlobal heat reclaim variable for use by heat reclaim coil (part load ratio is accounted for)
 ! Calculation for heat reclaim needs to be corrected to use compressor power (not including condenser fan power)
   HeatReclaimDXCoil(DXCoilHPSimNum)%AvailCapacity = DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate + DXCoil(DXCoilHPSimNum)%ElecCoolingPower
 
-  !MinAirHumRat = MIN(InletAirHumRat,OutletAirHumRat)
+  !MinAirHumRat = MIN(InletAirHumRat,OutletAirHumRat)   !RS: Debugging: Adding a "-" below so that it has the same convention (8/15/14)
   DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate = QSens !AirMassFlow * &
   !                                       (PsyHFnTdbW(InletAirDryBulbTemp,MinAirHumRat) - &
   !                                        PsyHFnTdbW(OutletAirTemp,MinAirHumRat))
 !  Don't let sensible capacity be greater than total capacity
-  IF (DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate .GT. DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate) THEN
+  !IF (DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate .GT. DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate) THEN
+  !   DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate = DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate
+  !END IF
+  !RS: Debugging: Trying to handle the sign conventions for when cooling is "-" (8/18/14)
+  IF (ABS(DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate) .GT. ABS(DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate)) THEN
      DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate = DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate
   END IF
 !
@@ -8809,54 +9287,30 @@ END IF
   !                                       (1.d0 - DXCoil(DXCoilNum)%CoolingCoilRuntimeFraction)
   !  ENDIF
   !END IF
-
-  DXCoil(DXCoilHPSimNum)%OutletAirTemp     = OutletAirTemp
+    !RS: Debugging: Removing because they're already set and the recalculation is slightly off
+  !DXCoil(DXCoilHPSimNum)%OutletAirTemp     = OutletAirTemp
   !DXCoil(DXCoilHPSimNum)%OutletAirHumRat   = OutletAirHumRat   !RS: Debugging: Unnecessary and if OutletAirHumRat not updated, a bad idea
-  DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy = OutletAirEnthalpy
+  !DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy = OutletAirEnthalpy
 
-!ELSE
+ELSE
 
   ! DX coil is off; just pass through conditions
-!  DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy = DXCoil(DXCoilHPSimNum)%InletAirEnthalpy
-!  DXCoil(DXCoilHPSimNum)%OutletAirHumRat   = DXCoil(DXCoilHPSimNum)%InletAirHumRat
-!  DXCoil(DXCoilHPSimNum)%OutletAirTemp     = DXCoil(DXCoilHPSimNum)%InletAirTemp
-!
-!  DXCoil(DXCoilHPSimNum)%ElecCoolingPower = 0.0
-!  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = 0.0
-!  DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate = 0.0
-!  DXCoil(DXCoilHPSimNum)%LatCoolingEnergyRate = 0.0
-!  DXCoil(DXCoilHPSimNum)%EvapCondPumpElecPower = 0.0
-!  DXCoil(DXCoilHPSimNum)%EvapWaterConsumpRate = 0.0
-!
-!! Reset globals when DX coil is OFF for use in heat recovery module
-!  DXCoilFullLoadOutAirTemp(DXCoilHPSimNum) = 0.0
-!  DXCoilFullLoadOutAirHumRat(DXCoilHPSimNum) = 0.0
+  DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy = DXCoil(DXCoilHPSimNum)%InletAirEnthalpy
+  DXCoil(DXCoilHPSimNum)%OutletAirHumRat   = DXCoil(DXCoilHPSimNum)%InletAirHumRat
+  DXCoil(DXCoilHPSimNum)%OutletAirTemp     = DXCoil(DXCoilHPSimNum)%InletAirTemp
 
-! Calculate crankcase heater power using the runtime fraction for this DX cooling coil (here DXCoolingCoilRTF=0) if
-! there is no companion DX coil, or the runtime fraction of the companion DX heating coil (here DXHeatingCoilRTF>=0).
-  !IF(DXCoil(DXCoilNum)%CompanionUpstreamDXCoil .EQ. 0) THEN
-  !  DXCoil(DXCoilHPSimNum)%CrankcaseHeaterPower = CrankcaseHeatingPower
-  !ELSE
-  !  DXCoil(DXCoilNum)%CrankcaseHeaterPower = CrankcaseHeatingPower * &
-  !                                          (1.d0-DXCoil(DXCoil(DXCoilNum)%CompanionUpstreamDXCoil)%HeatingCoilRuntimeFraction)
-  !END IF
+  DXCoil(DXCoilHPSimNum)%ElecCoolingPower = 0.0
+  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = 0.0
+  DXCoil(DXCoilHPSimNum)%SensCoolingEnergyRate = 0.0
+  DXCoil(DXCoilHPSimNum)%LatCoolingEnergyRate = 0.0
+  DXCoil(DXCoilHPSimNum)%EvapCondPumpElecPower = 0.0
+  DXCoil(DXCoilHPSimNum)%EvapWaterConsumpRate = 0.0
 
-! Calculate basin heater power
-  !IF (DXCoil(DXCoilNum)%DXCoilType_Num == CoilDX_CoolingTwoStageWHumControl) THEN
-  !  IF (ANY(DXCoil(DXCoilNum)%CondenserType == EvapCooled)) THEN
-  !    CALL CalcBasinHeaterPower(DXCoil(DXCoilNum)%BasinHeaterPowerFTempDiff,&
-  !                             DXCoil(DXCoilNum)%BasinHeaterSchedulePtr,&
-  !                             DXCoil(DXCoilNum)%BasinHeaterSetPointTemp,DXCoil(DXCoilNum)%BasinHeaterPower)
-  !  ENDIF
-  !ELSE
-  !  IF (DXCoil(DXCoilNum)%CondenserType(Mode) == EvapCooled) THEN
-  !    CALL CalcBasinHeaterPower(DXCoil(DXCoilNum)%BasinHeaterPowerFTempDiff,&
-  !                            DXCoil(DXCoilNum)%BasinHeaterSchedulePtr,&
-  !                            DXCoil(DXCoilNum)%BasinHeaterSetPointTemp,DXCoil(DXCoilNum)%BasinHeaterPower)
-  !  ENDIF
-  !ENDIF
+! Reset globals when DX coil is OFF for use in heat recovery module
+  DXCoilFullLoadOutAirTemp(DXCoilHPSimNum) = 0.0
+  DXCoilFullLoadOutAirHumRat(DXCoilHPSimNum) = 0.0
 
-!END IF ! end of on/off if - else
+END IF ! end of on/off if - else
 
 !set water system demand request (if needed)
 IF ( DXCoil(DXCoilHPSimNum)%EvapWaterSupplyMode == WaterSupplyFromTank) THEN
@@ -8870,6 +9324,17 @@ DXCoilPartLoadRatio(DXCoilHPSimNum)      = DXCoil(DXCoilHPSimNum)%PartLoadRatio
 DXCoilFanOpMode(DXCoilHPSimNum)          = FanOpMode
 DXCoil(DXCoilHPSimNum)%CondInletTemp     = CondInletTemp
 
+!RS: Debugging: Trying to have HPSim only called when it needs to be (3/17/18)
+OutTemp_Previous = OutTemp_Current
+InDTemp_Previous = InDTemp_Current
+InWTemp_Previous = InWTemp_Current
+
+!CALL HPSimPowerUpdate(DXCoilHPSimNum)   !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+
+!ERRORFLAG=.FALSE.
+!OutletNode=2
+!InletNode=5 !4
+!       CALL UpdateHVACInterface(OutletNode,InletNode,ERRORFLAG) !RS: Testing: ??? (8/8/14)
 RETURN
 END SUBROUTINE CalcHPSimDXCoil
 

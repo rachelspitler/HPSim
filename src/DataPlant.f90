@@ -520,6 +520,7 @@ INTEGER, PARAMETER :: TypeOf_PlantComponentUserDefined   = 81
 INTEGER, PARAMETER :: TypeOf_CoilUserDefined             = 82
 INTEGER, PARAMETER :: TypeOf_ZoneHVACAirUserDefined      = 83
 INTEGER, PARAMETER :: TypeOf_AirTerminalUserDefined      = 84
+INTEGER, PARAMETER :: TypeOf_HPSim  = 85    !RS: Debugging: Adding in HPSim component (10/29/14)
 
 ! Parameters for General Equipment Types
 INTEGER, PARAMETER :: NumGeneralEquipTypes               = 22

@@ -182,6 +182,10 @@ TYPE PTUnitData
  CHARACTER(len=MaxNameLength) :: AvailManagerListName = ' ' ! Name of an availability manager list object
  Logical                      :: AvailManagerListFound = .FALSE. ! True if availability manager list name is specified
                                                                  ! for PT unit object
+                                                                 
+ REAL(r64) :: CndFanPwr  !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+ REAL(r64) :: CompPwr    !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+ 
 ! starting added variables for variable speed water source heat pump, Bo Shen, ORNL, March 2012
   INTEGER  :: HeatCoolMode          = 0  ! System operating mode (0 = floating, 1 = cooling, 2 = heating)
   INTEGER  :: NumOfSpeedCooling     =0   ! The number of speeds for cooling
@@ -247,7 +251,7 @@ PUBLIC  GetPTUnitOutAirNode
 PUBLIC  GetPTUnitReturnAirNode
 PUBLIC  GetPTUnitMixedAirNode
 PUBLIC  GetPTUnitZoneInletAirNode
-PUBLIC  HPSimNodes  !RS: Debugging: Set up to return the node numbers to ORNLsolver
+!PUBLIC  HPSimNodes  !RS: Debugging: Set up to return the node numbers to ORNLsolver
 
         ! modules for variable speed water-to-air heat pump
 PRIVATE SimMSWSHP
@@ -257,6 +261,8 @@ PRIVATE SetVSWSHPAirFlow
 PRIVATE MSWSHPVarSpeedResidual
 PRIVATE MSWSHPCyclingResidual
 PRIVATE ControlMSWSHPOutput
+
+PRIVATE HPSimPowerUpdate    !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
 
 CONTAINS
 
@@ -657,6 +663,10 @@ SUBROUTINE GetPTUnit
   CHARACTER(len=MaxNameLength), ALLOCATABLE, DIMENSION(:) :: cNumericFields ! Numeric field names
   LOGICAL, ALLOCATABLE, DIMENSION(:) :: lAlphaBlanks     ! Logical array, alpha field input BLANK = .true.
   LOGICAL, ALLOCATABLE, DIMENSION(:) :: lNumericBlanks   ! Logical array, numeric field input BLANK = .true.
+
+  INTEGER :: DebugFile       =150 !RS: Debugging file denotion, hopefully this works.
+    
+  OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging
 
   MaxNumbers = 0
   MaxAlphas  = 0
@@ -1109,11 +1119,16 @@ SUBROUTINE GetPTUnit
         ErrorsFound=.TRUE.
       END IF
       IF(SuppHeatOutletNodeNum /= PTUnit(PTUnitNum)%AirOutNode)THEN
-        CALL ShowSevereError(TRIM(CurrentModuleObject)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
-                           '" Supplemental heating coil outlet node name must be the same as the heat pumps outlet node name.')
-        CALL ShowContinueError('..Supplemental heating coil outlet node name = '//TRIM(NodeID(SuppHeatOutletNodeNum)))
-        CALL ShowContinueError('..Heat pumps outlet node name                   = '//TRIM(NodeID(PTUnit(PTUnitNum)%AirOutNode)))
-        ErrorsFound=.TRUE.
+        !CALL ShowSevereError(TRIM(CurrentModuleObject)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
+        !                   '" Supplemental heating coil outlet node name must be the same as the heat pumps outlet node name.')
+        !CALL ShowContinueError('..Supplemental heating coil outlet node name = '//TRIM(NodeID(SuppHeatOutletNodeNum)))
+        !CALL ShowContinueError('..Heat pumps outlet node name                   = '//TRIM(NodeID(PTUnit(PTUnitNum)%AirOutNode)))
+        !RS: Secret Search String (10/28/14)
+        WRITE(DebugFile,*) TRIM(CurrentModuleObject)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
+                           '" Supplemental heating coil outlet node name must be the same as the heat pumps outlet node name.'
+        WRITE(DebugFile,*) '..Supplemental heating coil outlet node name = '//TRIM(NodeID(SuppHeatOutletNodeNum))
+        WRITE(DebugFile,*) '..Heat pumps outlet node name                   = '//TRIM(NodeID(PTUnit(PTUnitNum)%AirOutNode))
+        !ErrorsFound=.TRUE. !RS: Debugging: Attempting to allow it use VAV system with Packaged HP (10/28/14)
       END IF
       ! check that PTUnit outlet node is a zone inlet node.
       ZoneNodeNotFound = .TRUE.
@@ -2803,77 +2818,77 @@ SUBROUTINE GetPTUnit
       ENDIF
     END IF
 
-!    !RS: 4-14-14: Trying to fix no outside air flow
-!    
-!    PTUnit(PTUnitNum)%MaxCoolAirVolFlow       = Numbers(1)
-!    IF (PTUnit(PTUnitNum)%MaxCoolAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(1))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(1),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!    PTUnit(PTUnitNum)%MaxHeatAirVolFlow       = Numbers(2)
-!    IF (PTUnit(PTUnitNum)%MaxHeatAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(2))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(2),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!    PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow = Numbers(3)
-!    IF (PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(3))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(3),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!    PTUnit(PTUnitNum)%CoolOutAirVolFlow       = Numbers(4)
-!    IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(4))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(4),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!    
-!    !   only check that SA flow in cooling is >= OA flow in cooling when either or both are not autosized
-!    IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .AND. &
-!        PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' '//TRIM(cNumericFields(4))//' cannot be greater than '// &
-!                           TRIM(cNumericFields(1)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!    PTUnit(PTUnitNum)%HeatOutAirVolFlow       = Numbers(5)
-!    IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%HeatOutAirVolFlow.NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(5))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(5),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!!   only check that SA flow in heating is >= OA flow in heating when either or both are not autosized
-!    IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .AND. &
-!        PTUnit(PTUnitNum)%HeatOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' '//TRIM(cNumericFields(5))//' cannot be greater than '// &
-!                           TRIM(cNumericFields(2)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!
-!    PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = Numbers(6)
-!    IF (PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .NE. AutoSize) THEN
-!      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(6))//' = ' &
-!                           //TRIM(TrimSigDigits(Numbers(6),7)))
-!      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
-!      ErrorsFound = .TRUE.
-!    END IF
-!!   only check that SA flow when compressor is OFF is >= OA flow when compressor is OFF after fan mode is read in
-!
-!
-!    !RS: 4-14-14: Trying to fix no outside air flow (end)
+    !RS: 4-14-14: Trying to fix no outside air flow
+    
+    PTUnit(PTUnitNum)%MaxCoolAirVolFlow       = Numbers(1)
+    IF (PTUnit(PTUnitNum)%MaxCoolAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(1))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(1),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+    PTUnit(PTUnitNum)%MaxHeatAirVolFlow       = Numbers(2)
+    IF (PTUnit(PTUnitNum)%MaxHeatAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(2))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(2),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+    PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow = Numbers(3)
+    IF (PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(3))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(3),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+    PTUnit(PTUnitNum)%CoolOutAirVolFlow       = Numbers(4)
+    IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(4))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(4),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+    
+    !   only check that SA flow in cooling is >= OA flow in cooling when either or both are not autosized
+    IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .AND. &
+        PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' '//TRIM(cNumericFields(4))//' cannot be greater than '// &
+                           TRIM(cNumericFields(1)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+    PTUnit(PTUnitNum)%HeatOutAirVolFlow       = Numbers(5)
+    IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%HeatOutAirVolFlow.NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(5))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(5),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+!   only check that SA flow in heating is >= OA flow in heating when either or both are not autosized
+    IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .AND. &
+        PTUnit(PTUnitNum)%HeatOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' '//TRIM(cNumericFields(5))//' cannot be greater than '// &
+                           TRIM(cNumericFields(2)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+
+    PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = Numbers(6)
+    IF (PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .NE. AutoSize) THEN
+      CALL ShowSevereError(TRIM(CurrentModuleObject)//' illegal '//TRIM(cNumericFields(6))//' = ' &
+                           //TRIM(TrimSigDigits(Numbers(6),7)))
+      CALL ShowContinueError('Occurs in '//TRIM(CurrentModuleObject)//' = '//TRIM(PTUnit(PTUnitNum)%Name))
+      ErrorsFound = .TRUE.
+    END IF
+!   only check that SA flow when compressor is OFF is >= OA flow when compressor is OFF after fan mode is read in
+
+
+    !RS: 4-14-14: Trying to fix no outside air flow (end)
     
     !Get fan data
     PTUnit(PTUnitNum)%FanType = Alphas(7)
@@ -3185,20 +3200,49 @@ SUBROUTINE GetPTUnit
     ! END IF
     !ENDIF
 
-    IF (SameString(Alphas(10),'BlowThrough'))  PTUnit(PTUnitNum)%FanPlace = BlowThru
-    IF (SameString(Alphas(10),'DrawThrough'))  PTUnit(PTUnitNum)%FanPlace = DrawThru
+    !RS: Debugging: Adding in this to hopefully place the proper nodes around HPSim (4/28/14)
+    PTUnit(PTUnitNum)%DXCoolCoilType = Alphas(10)
+         PTUnit(PTUnitNum)%DXCoolCoilType_Num = CoilDX_CoolingSingleSpeed
+         PTUnit(PTUnitNum)%DXCoolCoilName=Alphas(10)    !RS: Adding so that it will find an index number
+         ErrFlag = .FALSE.
+         CALL GetDXCoolCoilIndex(PTUnit(PTUnitNum)%DXCoolCoilName,PTUnit(PTUnitNum)%DXCoolCoilIndexNum, &
+                                 ErrFlag, PTUnit(PTUnitNum)%DXCoolCoilType)
+         CoolCoilInletNodeNum = GetDXCoilInletNode(PTUnit(PTUnitNum)%DXCoolCoilType,PTUnit(PTUnitNum)%DXCoolCoilName,ErrFlag)
+         CoolCoilOutletNodeNum = GetDXCoilOutletNode(PTUnit(PTUnitNum)%DXCoolCoilType,PTUnit(PTUnitNum)%DXCoolCoilName,ErrFlag)
+         PTUnit(PTUnitNum)%CondenserNodeNum = &
+                         GetCoilCondenserInletNode(PTUnit(PTUnitNum)%DXCoolCoilType,PTUnit(PTUnitNum)%DXCoolCoilName,ErrFlag)
+         IF(ErrFlag)CALL ShowContinueError('...occurs in '//TRIM(PTUnit(PTUnitNum)%UnitType)// &
+                                           ' "'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+      
+    !!RS: Debugging: Adding in this to hopefully place the proper nodes around HPSim (8/29/14)   
+    !    PTUnit(PTUnitNum)%DXHeatCoilType = Alphas(10)
+    !     PTUnit(PTUnitNum)%DXHeatCoilType_Num = CoilDX_HPSim !Coil_HeatingWaterToAirHPSimple
+    !     PTUnit(PTUnitNum)%DXHeatCoilName=Alphas(10)    !RS: Adding so that it will find an index number
+    !     ErrFlag = .FALSE.
+    !     PTUnit(PTUnitNum)%DXHeatCoilIndex = PTUnit(PTUnitNum)%DXCoolCoilIndexNum+1 !GetWtoAHPSimpleCoilIndex(PTUnit(PTUnitNum)%DXHeatCoilType, PTUnit(PTUnitNum)%DXHeatCoilName, &
+    !                             !ErrFlag) !, )
+    !     HeatCoilInletNodeNum = GetDXCoilInletNode(PTUnit(PTUnitNum)%DXHeatCoilType,PTUnit(PTUnitNum)%DXHeatCoilName,ErrFlag)
+    !     HeatCoilOutletNodeNum = GetDXCoilOutletNode(PTUnit(PTUnitNum)%DXHeatCoilType,PTUnit(PTUnitNum)%DXHeatCoilName,ErrFlag)
+    !     !PTUnit(PTUnitNum)%CondenserNodeNum = &
+    !     !                GetCoilCondenserInletNode(PTUnit(PTUnitNum)%DXCoolCoilType,PTUnit(PTUnitNum)%DXCoolCoilName,ErrFlag)
+    !     IF(ErrFlag)CALL ShowContinueError('...occurs in '//TRIM(PTUnit(PTUnitNum)%UnitType)// &
+    !                                       ' "'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+    
+    IF (SameString(Alphas(11),'BlowThrough'))  PTUnit(PTUnitNum)%FanPlace = BlowThru
+    IF (SameString(Alphas(11),'DrawThrough'))  PTUnit(PTUnitNum)%FanPlace = DrawThru
+    
     IF (PTUnit(PTUnitNum)%FanPlace .EQ.0) THEN
       CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(Alphas(1))//'"')
-      CALL ShowContinueError('Illegal '//TRIM(cAlphaFields(10))//'="'//TRIM(Alphas(10))//'".')
+      CALL ShowContinueError('Illegal '//TRIM(cAlphaFields(11))//'="'//TRIM(Alphas(11))//'".')
       ErrorsFound = .TRUE.
     END IF
 
-    PTUnit(PTUnitNum)%FanSchedPtr     = GetScheduleIndex(Alphas(11))
-    IF (.NOT. lAlphaBlanks(11) .AND. PTUnit(PTUnitNum)%FanSchedPtr == 0) THEN
+    PTUnit(PTUnitNum)%FanSchedPtr     = GetScheduleIndex(Alphas(12))
+    IF (.NOT. lAlphaBlanks(12) .AND. PTUnit(PTUnitNum)%FanSchedPtr == 0) THEN
       CALL ShowSevereError(TRIM(CurrentModuleObject)//' = '//TRIM(Alphas(1)))
-      CALL ShowContinueError('Illegal '//TRIM(cAlphaFields(11))//' = '//TRIM(Alphas(11)))
+      CALL ShowContinueError('Illegal '//TRIM(cAlphaFields(12))//' = '//TRIM(Alphas(12)))
       ErrorsFound=.TRUE.
-    ELSEIF (lAlphaBlanks(11)) THEN
+    ELSEIF (lAlphaBlanks(12)) THEN
       PTUnit(PTUnitNum)%OpMode = CycFanCycCoil
     ENDIF
     
@@ -3273,21 +3317,21 @@ SUBROUTINE GetPTUnit
       !  CALL ShowContinueError('..Cooling coil inlet node name = '//TRIM(NodeID(CoolCoilInletNodeNum)))
       !  ErrorsFound=.TRUE.
       !END IF
-      IF(CoolCoilOutletNodeNum /= HeatCoilInletNodeNum)THEN
-        CALL ShowSevereError(TRIM(CurrentModuleObject)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
-                           '" Cooling coil outlet node name must be the same as the heatng coil inlet node name.')
-        CALL ShowContinueError('..Cooling coil outlet node name = '//TRIM(NodeID(CoolCoilOutletNodeNum)))
-        CALL ShowContinueError('..Heating coil inlet node name  = '//TRIM(NodeID(HeatCoilInletNodeNum)))
-        ErrorsFound=.TRUE.
-      END IF
-      IF(HeatCoilOutletNodeNum /= SuppHeatInletNodeNum)THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError('..Heating coil outlet node name must be the same as the supplemental heating coil inlet node name')
-        CALL ShowContinueError('..when blow through '//TRIM(cAlphaFields(15))//' is specified.')
-        CALL ShowContinueError('..Heating coil outlet node name              = '//TRIM(NodeID(HeatCoilOutletNodeNum)))
-        CALL ShowContinueError('..Supplemental heating coil inlet node name  = '//TRIM(NodeID(SuppHeatInletNodeNum)))
-        ErrorsFound=.TRUE.
-      END IF
+      !IF(CoolCoilOutletNodeNum /= HeatCoilInletNodeNum)THEN
+      !  CALL ShowSevereError(TRIM(CurrentModuleObject)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
+      !                     '" Cooling coil outlet node name must be the same as the heatng coil inlet node name.')
+      !  CALL ShowContinueError('..Cooling coil outlet node name = '//TRIM(NodeID(CoolCoilOutletNodeNum)))
+      !  CALL ShowContinueError('..Heating coil inlet node name  = '//TRIM(NodeID(HeatCoilInletNodeNum)))
+      !  ErrorsFound=.TRUE.
+      !END IF
+      !IF(HeatCoilOutletNodeNum /= SuppHeatInletNodeNum)THEN
+      !  CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+      !  CALL ShowContinueError('..Heating coil outlet node name must be the same as the supplemental heating coil inlet node name')
+      !  CALL ShowContinueError('..when blow through '//TRIM(cAlphaFields(15))//' is specified.')
+      !  CALL ShowContinueError('..Heating coil outlet node name              = '//TRIM(NodeID(HeatCoilOutletNodeNum)))
+      !  CALL ShowContinueError('..Supplemental heating coil inlet node name  = '//TRIM(NodeID(SuppHeatInletNodeNum)))
+      !  ErrorsFound=.TRUE.
+      !END IF
       !IF(SuppHeatOutletNodeNum /= PTUnit(PTUnitNum)%AirOutNode)THEN
       !  CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
       !  CALL ShowContinueError('..Supplemental heating coil outlet node name must be the same as the heat pumps outlet node name.')
@@ -3479,89 +3523,91 @@ SUBROUTINE GetPTUnit
 !       ENDIF
 !     ENDIF
 
-    PTUnit(PTUnitNum)%MaxCoolAirVolFlow       = Numbers(1)
-    IF (PTUnit(PTUnitNum)%MaxCoolAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
-      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-      CALL ShowContinueError(' illegal value '//TRIM(cNumericFields(1))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(1),7)))
-      ErrorsFound = .TRUE.
-    END IF
+!    PTUnit(PTUnitNum)%MaxCoolAirVolFlow       = Numbers(1)
+!    IF (PTUnit(PTUnitNum)%MaxCoolAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
+!      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!      CALL ShowContinueError(' illegal value '//TRIM(cNumericFields(1))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(1),7)))
+!      ErrorsFound = .TRUE.
+!    END IF
+!
+!    PTUnit(PTUnitNum)%MaxHeatAirVolFlow       = Numbers(2)
+!    IF (PTUnit(PTUnitNum)%MaxHeatAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
+!      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!      CALL ShowContinueError(' illegal '//TRIM(cNumericFields(2))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(2),7)))
+!      ErrorsFound = .TRUE.
+!    END IF
+!
+!    PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow = Numbers(3)
+!    IF (PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .NE. AutoSize) THEN
+!      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!      CALL ShowContinueError(' illegal '//TRIM(cNumericFields(3))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(3),7)))
+!      ErrorsFound = .TRUE.
+!    END IF
+!
+!    IF(OANodeNums(1) .GT. 0)THEN
+!      PTUnit(PTUnitNum)%CoolOutAirVolFlow       = Numbers(4)
+!      IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize) THEN
+!        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(4))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(4),7)))
+!        ErrorsFound = .TRUE.
+!      END IF
+!
+!!     only check that SA flow in cooling is >= OA flow in cooling when either or both are not autosized
+!      IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .AND. &
+!          PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
+!        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(4))//' cannot be greater than '// &
+!                           TRIM(cNumericFields(1)))
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(1))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(1),7)))
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(4))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(4),7)))
+!        ErrorsFound = .TRUE.
+!      END IF
+!
+!      PTUnit(PTUnitNum)%HeatOutAirVolFlow       = Numbers(5)
+!      IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%HeatOutAirVolFlow.NE. AutoSize) THEN
+!        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(5))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(5),7)))
+!        ErrorsFound = .TRUE.
+!      END IF
+!
+!!     only check that SA flow in heating is >= OA flow in heating when either or both are not autosized
+!      IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .AND. &
+!          PTUnit(PTUnitNum)%HeatOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
+!        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(5))//' cannot be greater than '// &
+!                             TRIM(cNumericFields(2)))
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(2))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(2),7)))
+!        CALL ShowContinueError('..'//TRIM(cNumericFields(5))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(5),7)))
+!        ErrorsFound = .TRUE.
+!      END IF
+!
+!      PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = Numbers(6)
+!      IF (PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .NE. AutoSize) THEN
+!        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+!        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(6))//' = ' &
+!                           //TRIM(TrimSigDigits(Numbers(6),7)))
+!        ErrorsFound = .TRUE.
+!      END IF
+!    ELSE
+!      PTUnit(PTUnitNum)%CoolOutAirVolFlow = 0.0d0
+!      PTUnit(PTUnitNum)%HeatOutAirVolFlow = 0.0d0
+!      PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = 0.0d0
+!      IF(.NOT. lNumericBlanks(4) .OR. .NOT. lNumericBlanks(5) .OR. .NOT. lNumericBlanks(6))THEN
+!      ! user entered values for OA with no outdoor air mixer name specified
+!        PTUnit(PTUnitNum)%CoolOutAirVolFlow = 0.0d0
+!      END IF
+!    END IF
 
-    PTUnit(PTUnitNum)%MaxHeatAirVolFlow       = Numbers(2)
-    IF (PTUnit(PTUnitNum)%MaxHeatAirVolFlow .LE. 0 .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
-      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-      CALL ShowContinueError(' illegal '//TRIM(cNumericFields(2))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(2),7)))
-      ErrorsFound = .TRUE.
-    END IF
-
-    PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow = Numbers(3)
-    IF (PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%MaxNoCoolHeatAirVolFlow .NE. AutoSize) THEN
-      CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-      CALL ShowContinueError(' illegal '//TRIM(cNumericFields(3))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(3),7)))
-      ErrorsFound = .TRUE.
-    END IF
-
-    IF(OANodeNums(1) .GT. 0)THEN
-      PTUnit(PTUnitNum)%CoolOutAirVolFlow       = Numbers(4)
-      IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize) THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(4))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(4),7)))
-        ErrorsFound = .TRUE.
-      END IF
-
-!     only check that SA flow in cooling is >= OA flow in cooling when either or both are not autosized
-      IF (PTUnit(PTUnitNum)%CoolOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .AND. &
-          PTUnit(PTUnitNum)%CoolOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxCoolAirVolFlow .NE. AutoSize) THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError('..'//TRIM(cNumericFields(4))//' cannot be greater than '// &
-                           TRIM(cNumericFields(1)))
-        CALL ShowContinueError('..'//TRIM(cNumericFields(1))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(1),7)))
-        CALL ShowContinueError('..'//TRIM(cNumericFields(4))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(4),7)))
-        ErrorsFound = .TRUE.
-      END IF
-
-      PTUnit(PTUnitNum)%HeatOutAirVolFlow       = Numbers(5)
-      IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%HeatOutAirVolFlow.NE. AutoSize) THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(5))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(5),7)))
-        ErrorsFound = .TRUE.
-      END IF
-
-!     only check that SA flow in heating is >= OA flow in heating when either or both are not autosized
-      IF (PTUnit(PTUnitNum)%HeatOutAirVolFlow .GT. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .AND. &
-          PTUnit(PTUnitNum)%HeatOutAirVolFlow .NE. AutoSize .AND. PTUnit(PTUnitNum)%MaxHeatAirVolFlow .NE. AutoSize) THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError('..'//TRIM(cNumericFields(5))//' cannot be greater than '// &
-                             TRIM(cNumericFields(2)))
-        CALL ShowContinueError('..'//TRIM(cNumericFields(2))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(2),7)))
-        CALL ShowContinueError('..'//TRIM(cNumericFields(5))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(5),7)))
-        ErrorsFound = .TRUE.
-      END IF
-
-      PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = Numbers(6)
-      IF (PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .LT. 0 .AND. PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow .NE. AutoSize) THEN
-        CALL ShowSevereError(RoutineName//TRIM(CurrentModuleObject)//'="'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-        CALL ShowContinueError(' illegal '//TRIM(cNumericFields(6))//' = ' &
-                           //TRIM(TrimSigDigits(Numbers(6),7)))
-        ErrorsFound = .TRUE.
-      END IF
-    ELSE
-      PTUnit(PTUnitNum)%CoolOutAirVolFlow = 0.0d0
-      PTUnit(PTUnitNum)%HeatOutAirVolFlow = 0.0d0
-      PTUnit(PTUnitNum)%NoCoolHeatOutAirVolFlow = 0.0d0
-      IF(.NOT. lNumericBlanks(4) .OR. .NOT. lNumericBlanks(5) .OR. .NOT. lNumericBlanks(6))THEN
-      ! user entered values for OA with no outdoor air mixer name specified
-        PTUnit(PTUnitNum)%CoolOutAirVolFlow = 0.0d0
-      END IF
-    END IF
+    MassFlowControlSignal=Numbers(11)
 
      !Set the heat pump heating coil capacity
      !  Get from coil module.
@@ -3801,6 +3847,21 @@ SUBROUTINE GetPTUnit
                              'System','Average',PTUnit(PTUnitNum)%Name)
     ENDIF
   END DO
+  
+  DO PTUnitNum=1+NumPTHP,NumPTHPSim+NumPTHP     
+!!RS: Debugging: Trying to adjust the variables in the output csv (8/21/14)
+    CALL SetupOutputVariable('Condenser Fan Power [W]',PTUnit(PTUnitNum)%CndFanPwr,'System','Average',PTUnit(PTUnitNum)%Name)  !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+    CALL SetupOutputVariable('Compressor Power [kW]',PTUnit(PTUnitNum)%CompPwr,'System','Average',PTUnit(PTUnitNum)%Name)  !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+!    CALL SetupOutputVariable('Mixed Air Node Dry Bulb [C]',Node(OANodeNums(4))%Temp,'System','Average',PTUnit(PTUnitNum)%Name)
+!    CALL SetupOutputVariable('Mixed Air Node Humidity Ratio',Node(OANodeNums(4))%HumRat,'System','Average',PTUnit(PTUnitNum)%Name)
+!    CALL SetupOutputVariable('Cool Coil Dry Bulb [C]',Node(CoolCoilOutletNodeNum)%Temp,'System','Average',PTUnit(PTUnitNum)%Name)
+!    CALL SetupOutputVariable('Cool Coil Humidity Ratio',Node(CoolCoilOutletNodeNum)%HumRat,'System','Average',PTUnit(PTUnitNum)%Name)
+!    IF (HeatCoilOutletNodeNum .NE. 0) THEN
+!        CALL SetupOutputVariable('Heat Coil Dry Bulb [C]',Node(HeatCoilOutletNodeNum)%Temp,'System','Average',PTUnit(PTUnitNum)%Name)
+!        CALL SetupOutputVariable('Heat Coil Humidity Ratio',Node(HeatCoilOutletNodeNum)%HumRat,'System','Average',PTUnit(PTUnitNum)%Name)
+!    END IF
+  END DO
+  
   RETURN
 END SUBROUTINE GetPTUnit
 
@@ -5059,18 +5120,27 @@ SUBROUTINE ControlPTUnitOutput(PTUnitNum,FirstHVACIteration,OpMode,QZnReq,ZoneNu
           IF(PTUnit(PTUnitNum)%IterErrIndex .EQ. 0)THEN
             WRITE(IterNum,*) MaxIte
             IterNum=ADJUSTL(IterNum)
-            Call ShowWarningError(TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
-            CALL ShowContinueError(' Iteration limit exceeded calculating packaged terminal unit part-load ratio, '// &
-                                'maximum iterations = '//TRIM(IterNum))
-            CALL ShowContinueErrorTimeStamp(' Part-load ratio returned = '//TRIM(RoundSigDigits(PartLoadFrac,3)))
-            CALL ShowContinueError(' Load requested = '//TRIM(TrimSigDigits(QZnReq,5))//', Load delivered = ' &
-                                 //TRIM(TrimSigDigits(TempOutput,5)))
+            !Call ShowWarningError(TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//'"')
+            !CALL ShowContinueError(' Iteration limit exceeded calculating packaged terminal unit part-load ratio, '// &
+            !                    'maximum iterations = '//TRIM(IterNum))
+            !CALL ShowContinueErrorTimeStamp(' Part-load ratio returned = '//TRIM(RoundSigDigits(PartLoadFrac,3)))
+            !CALL ShowContinueError(' Load requested = '//TRIM(TrimSigDigits(QZnReq,5))//', Load delivered = ' &
+            !                     //TRIM(TrimSigDigits(TempOutput,5)))
+            WRITE(DebugFile,*) TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//'"'    !RS: Secret Search String
+            WRITE(DebugFile,*) ' Iteration limit exceeded calculating packaged terminal unit part-load ratio, '// &
+                                'maximum iterations = '//TRIM(IterNum)
+            WRITE(DebugFile,*) ' Part-load ratio returned = '//TRIM(RoundSigDigits(PartLoadFrac,3))
+            WRITE(DebugFile,*) ' Load requested = '//TRIM(TrimSigDigits(QZnReq,5))//', Load delivered = ' &
+                                 //TRIM(TrimSigDigits(TempOutput,5))
           END IF
-          CALL ShowRecurringWarningErrorAtEnd(TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
+          !CALL ShowRecurringWarningErrorAtEnd(TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&
+          !  '" - Iteration limit exceeded error continues...',   &
+          ! PTUnit(PTUnitNum)%IterErrIndex,ReportMinOf=TempOutput,ReportMaxOf=TempOutput,  &
+          !                                   ReportMaxUnits='{W}',ReportMinUnits='{W}')
+          WRITE(DebugFile,*) TRIM(PTUnit(PTUnitNum)%UnitType)//' "'//TRIM(PTUnit(PTUnitNum)%Name)//&    !RS: Secret Search String
             '" - Iteration limit exceeded error continues...',   &
-           PTUnit(PTUnitNum)%IterErrIndex,ReportMinOf=TempOutput,ReportMaxOf=TempOutput,  &
-                                             ReportMaxUnits='{W}',ReportMinUnits='{W}')
-
+           PTUnit(PTUnitNum)%IterErrIndex !,ReportMinOf=TempOutput,ReportMaxOf=TempOutput,  &
+                                           !  ReportMaxUnits='{W}',ReportMinUnits='{W}'
         END IF
       ELSE IF (SolFla == -2) THEN
         IF (.NOT. FirstHVACIteration) THEN
@@ -5205,6 +5275,8 @@ SUBROUTINE CalcPTUnit(PTUnitNum,FirstHVACIteration,PartLoadFrac,LoadMet,QZnReq,O
   USE PlantUtilities,            ONLY: SetComponentFlowRate
   USE General,                   ONLY: SolveRegulaFalsi
   USE DataHVACGlobals,           ONLY: SmallLoad, HPSimFlag
+  USE HVACDXSystem  !RS: Debugging: Bringing in PTUnitHPSimNum (11/3/14)
+  USE DataGlobals,               ONLY: WarmUpFlag   !RS: Debugging: Added as it can't seem to find the flag (7/4/18)
 
   IMPLICIT NONE    ! Enforce explicit typing of all variables in this routine
 
@@ -5253,7 +5325,8 @@ SUBROUTINE CalcPTUnit(PTUnitNum,FirstHVACIteration,PartLoadFrac,LoadMet,QZnReq,O
   !INTEGER   :: ControlCompTypeNum ! temporary component index number   !RS: Debugging: Extraneous
   REAL(r64), PARAMETER :: ErrTolerance = 0.001    ! convergence limit for hotwater coil
           ! FLOW
-
+  INTEGER :: TestCompIndex  !RS: Debugging: A test CompIndex number for HPSim case (8/14/14)
+  
   PTUnitTurnFansOn  = .FALSE.
   PTUnitTurnFansOff = .FALSE.
 
@@ -5315,12 +5388,21 @@ SUBROUTINE CalcPTUnit(PTUnitNum,FirstHVACIteration,PartLoadFrac,LoadMet,QZnReq,O
                           PTUnit(PTUnitNum)%HPTimeConstant, PTUnit(PTUnitNum)%FanDelayTime, 1, PartLoadFrac, &
                           OnOffAirFlowRat=OnOffAirFlowRatio)
         SaveCompressorPLR = PartLoadFrac
+        
       CASE(PTHPSimUnit) !RS: Implementation: Trying call HPSim from DXCoils
           HPSimFlag = 1 !RS: Implementation: Saying HPSim IS being used
-          PTUnit(PTUnitNum)%CoolCoilCompIndex = 1   !RS: Implementation: Keeping SimDXCoil from crashing
+          IF (WARMUPFlag) THEN
+              PTUnit(PTUnitNum)%CoolCoilCompIndex = 1
+          ELSE
+              PTUnit(PTUnitNum)%CoolCoilCompIndex = 3 !1   !RS: Implementation: Keeping SimDXCoil from crashing
+              PTUnitHPSimNum = 2    !RS: Debugging: Setting this for the current case (8/15/14)
+          END IF
           CALL SimDXCoil(PTUnit(PTUnitNum)%DXCoolCoilName,On,FirstHVACIteration,PartLoadFrac,PTUnit(PTUnitNum)%CoolCoilCompIndex,  &
              PTUnit(PTUnitNum)%OpMode,OnOffAirFlowRatio)
-          AirMassFlow = Node(OutletNode)%MassFlowRate !RS: Debugging: Setting it again because it's reading as 0 for RA-only case
+          !AirMassFlow = Node(OutletNode)%MassFlowRate !RS: Debugging: Setting it again because it's reading as 0 for RA-only case
+          HPSimFlag=0 !RS: Implementation: To try to set it so that it's not being used when it's warming up (8/14/14)
+          CALL HPSimPowerUpdate !(PTUnit(PTUnitNum)%CoolCoilCompIndex)    !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+          
       CASE DEFAULT
     END SELECT
   ELSE ! cooling coil is off
@@ -5342,11 +5424,19 @@ SUBROUTINE CalcPTUnit(PTUnitNum,FirstHVACIteration,PartLoadFrac,LoadMet,QZnReq,O
                          PTUnit(PTUnitNum)%HPTimeConstant, PTUnit(PTUnitNum)%FanDelayTime, 0, 0.0d0)
       CASE(PTHPSimUnit) !RS: Implementation: Trying call HPSim from DXCoils
           HPSimFlag = 1 !RS: Implementation: Saying that HPSim IS being used
-          PTUnit(PTUnitNum)%CoolCoilCompIndex = 1   !RS: Implementation: Keeping SimDXCoil from crashing
-            !RS: Implementation: The above is because if it's 0 then DXCoils thinks it has no business being there
-          CALL SimDXCoil(PTUnit(PTUnitNum)%DXCoolCoilName,Off,FirstHVACIteration,0.0d0,  &
+          IF (WARMUPFlag) THEN
+              PTUnit(PTUnitNum)%CoolCoilCompIndex = 1
+          ELSE
+              PTUnit(PTUnitNum)%CoolCoilCompIndex = 3 !1   !RS: Implementation: Keeping SimDXCoil from crashing
+              PTUnitHPSimNum = 2    !RS: Debugging: Setting this for the current case (8/15/14)
+          END IF
+              CALL SimDXCoil(PTUnit(PTUnitNum)%DXCoolCoilName,Off,FirstHVACIteration,0.0d0,  &
                          PTUnit(PTUnitNum)%CoolCoilCompIndex,PTUnit(PTUnitNum)%OpMode,OnOffAirFlowRatio)
-          AirMassFlow = Node(OutletNode)%MassFlowRate !RS: Debugging: Setting it again because it's reading as 0 for RA-only case
+            !RS: Implementation: The above is because if it's 0 then DXCoils thinks it has no business being there
+          !AirMassFlow = Node(OutletNode)%MassFlowRate !RS: Debugging: Setting it again because it's reading as 0 for RA-only case
+          HPSimFlag=0 !RS: Implementation: To try to set it so that it's not being used when it's warming up (8/14/14)
+          CALL HPSimPowerUpdate !(PTUnit(PTUnitNum)%CoolCoilCompIndex)    !RS: Debugging: Trying to pass through power from HPSim (9/3/14)
+
       CASE DEFAULT
     END SELECT
   END IF
@@ -5414,7 +5504,20 @@ SUBROUTINE CalcPTUnit(PTUnitNum,FirstHVACIteration,PartLoadFrac,LoadMet,QZnReq,O
                    0.0d0, 0.0d0, &
                    OpMode, 0.0d0, PTUnit(PTUnitNum)%MaxONOFFCyclesperHour, &
                    PTUnit(PTUnitNum)%HPTimeConstant, PTUnit(PTUnitNum)%FanDelayTime, 0, 0.0d0)
-
+        CASE(PTHPSimUnit) !RS: Implementation: Trying call HPSim from DXCoils
+          HPSimFlag = 1 !RS: Implementation: Saying that HPSim IS being used
+          IF (WARMUPFlag) THEN
+              PTUnit(PTUnitNum)%DXHeatCoilIndex = 2
+          ELSE
+              PTUnit(PTUnitNum)%DXHeatCoilIndex = 4 !1   !RS: Implementation: Keeping SimDXCoil from crashing
+              PTUnitHPSimNum = 2    !RS: Debugging: Setting this for the current case (8/15/14)
+          END IF
+              CALL SimDXCoil(PTUnit(PTUnitNum)%DXHeatCoilName,Off,FirstHVACIteration,0.0d0,  &
+                         PTUnit(PTUnitNum)%DXHeatCoilIndex,PTUnit(PTUnitNum)%OpMode,OnOffAirFlowRatio)
+            !RS: Implementation: The above is because if it's 0 then DXCoils thinks it has no business being there
+          !AirMassFlow = Node(OutletNode)%MassFlowRate !RS: Debugging: Setting it again because it's reading as 0 for RA-only case
+          HPSimFlag=0 !RS: Implementation: To try to set it so that it's not being used when it's warming up (8/14/14)
+          
           CASE DEFAULT
         END SELECT
       END IF
@@ -6003,8 +6106,15 @@ SUBROUTINE SetAverageAirFlow(PTUnitNum,PartLoadRatio,OnOffAirFlowRatio)
      .AND. ((GetCurrentScheduleValue(PTUnit(PTUnitNum)%FanAvailSchedPtr) .GT. 0.0d0 .OR. &
       AvailStatus .EQ. CycleOn) .AND. AvailStatus .NE. ForceOff))THEN
 
-    Node(InletNode)%MassFlowRate              = AverageUnitMassFlow
-    Node(InletNode)%MassFlowRateMaxAvail      = AverageUnitMassFlow
+    !RS: Debugging: Start of an attempt to vary mass flow rate (9/4/14)
+    IF (AverageUnitMassFlow .EQ. 0) THEN
+        Node(InletNode)%MassFlowRate = 0.0
+        Node(InletNode)%MassFlowRateMaxAvail = 0.0
+    ELSE
+    Node(InletNode)%MassFlowRate              = MassFlowControlSignal*PTUnit(PTUnitNum)%MaxCoolAirMassFlow !AverageUnitMassFlow
+    Node(InletNode)%MassFlowRateMaxAvail      = MassFlowControlSignal*PTUnit(PTUnitNum)%MaxCoolAirMassFlow !AverageUnitMassFlow
+    END IF
+
     IF(OutsideAirNode .GT. 0)THEN
       Node(OutsideAirNode)%MassFlowRate         = AverageOAMassFlow
       Node(OutsideAirNode)%MassFlowRateMaxAvail = AverageOAMassFlow
@@ -7625,14 +7735,29 @@ SUBROUTINE SetOnOffMassFlowRateMulSpeed(PTUnitNum, ZoneNum, FirstHVACIteration, 
 
 END SUBROUTINE SetOnOffMassFlowRateMulSpeed
 
-SUBROUTINE HPSimNodes(PTUnitNum,ReturnNode,OutsideNode)   !RS: Debugging: Returns nodal numbers to HPSim
-INTEGER,INTENT(OUT):: ReturnNode,OutsideNode
-INTEGER,INTENT(IN):: PTUnitNum
+!SUBROUTINE HPSimNodes(PTUnitNum,ReturnNode,OutsideNode)   !RS: Debugging: Returns nodal numbers to HPSim
+!INTEGER,INTENT(OUT):: ReturnNode,OutsideNode
+!INTEGER,INTENT(IN):: PTUnitNum
+!
+!    ReturnNode=PTUnit(PTUnitNum)%AirInNode
+!    OutsideNode=PTUnit(PTUnitNum)%OutsideAirNode
+!
+!END SUBROUTINE HPSimNodes
 
-    ReturnNode=PTUnit(PTUnitNum)%AirInNode
-    OutsideNode=PTUnit(PTUnitNum)%OutsideAirNode
+SUBROUTINE HPSimPowerUpdate !(DXCoilHPSimNum)
+!RS: Debugging: Trying to pass through power from HPSim (9/3/14)
 
-END SUBROUTINE HPSimNodes
+USE DXCoils !PackagedTerminalHeatPump
+!INTEGER, INTENT(IN):: DXCoilHPSimNum
+INTEGER :: PTUnitNum
+
+PTUnitNum=2
+
+PTUnit(PTUnitNum)%CndFanPwr=DXCoil(DXCoilHPSimNum)%CndFanPwr
+PTUnit(PTUnitNum)%CompPwr=DXCoil(DXCoilHPSimNum)%CompPwr
+
+END SUBROUTINE HPSimPowerUpdate
+
 !     NOTICE
 !
 !     Copyright © 1996-2012 The Board of Trustees of the University of Illinois
