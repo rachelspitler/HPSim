@@ -376,7 +376,7 @@ SUBROUTINE SimDXCoolingSystem(DXCoolingSystemName, FirstHVACIteration, AirLoopNu
                      DXCoolingSystem(DXSystemNum)%FanOpMode)
 
     CASE (CoilDX_HPSim) !RS: Debugging: Adding in HPSim (10/30/14)
-        !IF (.NOT. WARMUPFlag) THEN  !RS: Debugging: Trying to add in a simple coil for Warmup (11/15/14)
+        IF (.NOT. WARMUPFlag) THEN  !RS: Debugging: Trying to add in a simple coil for Warmup (11/15/14)
         CALL SimDXCoil(CompName,On,FirstHVACIteration, DXCoolingSystem(DXSystemNum)%PartLoadFrac,  &
          DXCoolingSystem(DXSystemNum)%CoolingCoilIndex, &
          DXCoolingSystem(DXSystemNum)%FanOpMode)
@@ -390,7 +390,7 @@ SUBROUTINE SimDXCoolingSystem(DXCoolingSystemName, FirstHVACIteration, AirLoopNu
         !Node(NodeOut)%Press=Node(NodeIn)%Press
         !Node(NodeOut)%Enthalpy=Node(NodeIn)%Enthalpy
         !Node(NodeOut)%HumRat=Node(NodeIn)%HumRat
-        !END IF  !RS: Debugging: Trying to add in a simple coil for Warmup (11/15/14)
+        END IF  !RS: Debugging: Trying to add in a simple coil for Warmup (11/15/14)
 
     CASE DEFAULT
       CALL ShowFatalError('SimDXCoolingSystem: Invalid DX Cooling System/Coil='//  &
