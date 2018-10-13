@@ -8325,7 +8325,7 @@ INTEGER :: MixedNode !=0
     CHARACTER(100) ::  path_1, path_2, StrScalar, fullname !path,
 REAL a,b2,c,path_2_len,  path_1_len !path_len,i,
     
-    OPEN(unit=107,file='C:\Users\lab303user\Documents\betsrg_dual\GenOpt\Qevap_E+.txt')  !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
+    OPEN(unit=107,file='C:\Users\lab303user\Desktop\HPSimProject\HPSimBuild\GenOpt\Qevap_E+.txt') !C:\Users\lab303user\Documents\betsrg_dual\GenOpt\Qevap_E+.txt')  !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
     OPEN(unit=DebugFile,file='Debug.txt')    !RS: Debugging
     OPEN(unit=151,file='HPSim_temps.csv')   !RS: Debugging: Keeping track of the temperatures for HPSim (5/25/15)
     OPEN(unit=152,file='HPSim_comprat.csv')   !RS: Debugging: Keeping track of the compressor ratio for HPSim (9/12/15)
@@ -8531,6 +8531,8 @@ ELSEIF((AirMassFlow .GT. 0.0) .AND. &
     
     Qevap=-Qevap/0.2927  !RS: Debugging: Converting to Btu/h for Buffer Program comparison and turning negative (1/16/16)
     
+    Qevap=-ZoneSysEnergyDemand(1)%TotalOutputRequired/0.2927    !RS: Debugging: This is a much greater value than the previous Qevap (9/8/18)
+    
     WRITE(107,*)Qevap,Node(9)%TempSetPoint,DXCoil(DXCoilHPSimNum)%InletAirTemp   !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
     CLOSE(107)
     
@@ -8711,7 +8713,7 @@ FolderPath=path_2
 !  ret = CloseHandle (ProcessInfo%hProcess)
 !  end if
         
-    !CALL System('GenOptExe.exe')
+    !CALL System('GenOpt_utility_updated_shared_old.exe')
     CALL System('Genopt_utility_updated_shared_V3.py') !('Genopt_utility_updated_shared.exe')
     HPSimCounter = HPSimCounter + 1 !RS: Debugging: Putting in a counter to determine how often HPSim is called (4/28/18)
     
