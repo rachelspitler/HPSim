@@ -170,6 +170,7 @@ REAL(r64),DIMENSION(:,:),ALLOCATABLE ::  ZoneTempHist
 REAL(r64),DIMENSION(:),ALLOCATABLE   ::  ZoneTempOscillate
 REAL(r64)                       ::  AnyZoneTempOscillate
 
+REAL(r64), PUBLIC :: LoadToCoolingSetPoint_HPSim    !RS: Debugging: Trying to transfer this to TestProgram for penalty function (11/3/18)
 
           ! SUBROUTINE SPECIFICATIONS:
 PUBLIC ManageZoneAirUpdates
@@ -3222,6 +3223,8 @@ SUBROUTINE CalcPredictedSystemLoad(ZoneNum)
       ZoneSysEnergyDemand(ZoneNum)%SequencedOutputRequiredToCoolingSP = & ! array assignment
                         ZoneSysEnergyDemand(ZoneNum)%OutputRequiredToCoolingSP
 
+    LoadToCoolingSetPoint_HPSim = LoadToCoolingSetPoint !RS: Debugging: Trying to transfer this to TestProgram for penalty function (11/3/18)
+    
   RETURN
 
 END SUBROUTINE CalcPredictedSystemLoad

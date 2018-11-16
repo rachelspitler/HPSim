@@ -8142,6 +8142,7 @@ SUBROUTINE CalcHPSimDXCoil(CompOp,FirstHVACIteration,PartLoadRatio,FanOpMode,Per
   USE HVACDXSystem  !RS: Debugging: Trying to bring over the coil inputs and outputs (11/1/14)
   USE DataZoneEnergyDemands !RS: Debugging: Trying to get it only call HPSim and optimization when there's a load (11/6/14)
   USE DataHeatBalFanSys, ONLY: ZoneThermostatSetPointHi, ZoneThermostatSetPointLo   !RS: Debugging: Trying to keep a constant setpoint (12/5/15)
+  USE ZoneTempPredictorCorrector, ONLY: LoadToCoolingSetPoint_HPSim !RS: Debugging: Trying to bring this in (11/3/18)
 
   USE dfwin !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
   USE dflib !RS: Debugging: Trying to get the code to wait until the exe has finished running before moving on (11/24/14)
@@ -8532,6 +8533,8 @@ ELSEIF((AirMassFlow .GT. 0.0) .AND. &
     Qevap=-Qevap/0.2927  !RS: Debugging: Converting to Btu/h for Buffer Program comparison and turning negative (1/16/16)
     
     Qevap=-ZoneSysEnergyDemand(1)%TotalOutputRequired/0.2927    !RS: Debugging: This is a much greater value than the previous Qevap (9/8/18)
+    
+    Qevap=-LoadToCoolingSetPoint_HPSim/0.2927   !RS: Debugging: Trying to bring this in; converting to Btu/h (11/3/18) Adding a "-" to try to correct the case (11/10/18)
     
     WRITE(107,*)Qevap,Node(9)%TempSetPoint,DXCoil(DXCoilHPSimNum)%InletAirTemp   !RS: Debugging: Printing out the Qevap to a file that can be read by TestProgram (10/10/15)
     CLOSE(107)
