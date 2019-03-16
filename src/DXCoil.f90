@@ -626,7 +626,7 @@ CASE (CoilDX_CoolingSingleSpeed)
       CALL CalcDoe2DXCoil(DXCoilNum,CompOp,FirstHVACIteration,PartLoadRatio, FanOpMode,OnOffAirFlowRatio=AirFlowRatio)
     END IF
     ELSE    !RS: Debugging: Trying to handle case when the coil isn't called because it's not needed (12/17/14)
-        IF (CurrentTime .LT. 12 .OR. CurrentTime .GT. 13) THEN    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)    
+        !IF (CurrentTime .LT. 12 .OR. CurrentTime .GT. 13) THEN    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)    
             IF (PRESENT(CoilCoolingHeatingPLRRatio)) THEN
                 CALL CalcDoe2DXCoil(DXCoilNum,CompOp,FirstHVACIteration,PartLoadRatio, FanOpMode, &
                           OnOffAirFlowRatio=AirFlowRatio, CoolingHeatingPLR=CoilCoolingHeatingPLRRatio)
@@ -640,7 +640,7 @@ CASE (CoilDX_CoolingSingleSpeed)
                 DXCoil(DXCoilNum)%ElecCoolingPower=0    !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
                 DXCoil(DXCoilNum)%LatCoolingEnergyRate=0    !RS: Debugging: The coil is "off" so it's 0 (8/6/16)
             END IF
-        END IF    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)
+        !END IF    !RS: Debugging: Hardcoding so only one hour of HPSim is being run (3/10/18)
     END IF
 
   CASE (CoilDX_HeatingEmpirical)
