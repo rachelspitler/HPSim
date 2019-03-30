@@ -9107,7 +9107,7 @@ END IF
 !
 ! For multimode coil, this should be full flow including bypassed fraction
   AirMassFlow = DXCoil(DXCoilHPSimNum)%InletAirMassFlowRate
-  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = TotCap !*PartLoadRatio !AirMassFlow * (InletAirEnthalpy - OutletAirEnthalpy)  !TotCap !RS: Debugging: Which?
+  DXCoil(DXCoilHPSimNum)%TotalCoolingEnergyRate = TotCap*(-LoadToCoolingSetPoint_HPSim/TotCap)  !RS:Debugging: Using this for part load fraction (3/16/19) !RS: Debugging: Which?
 
 ! Set DataHeatGlobal heat reclaim variable for use by heat reclaim coil (part load ratio is accounted for)
 ! Calculation for heat reclaim needs to be corrected to use compressor power (not including condenser fan power)
@@ -9164,6 +9164,8 @@ END IF
   !DXCoil(DXCoilHPSimNum)%OutletAirTemp     = OutletAirTemp
   !DXCoil(DXCoilHPSimNum)%OutletAirHumRat   = OutletAirHumRat   !RS: Debugging: Unnecessary and if OutletAirHumRat not updated, a bad idea
   !DXCoil(DXCoilHPSimNum)%OutletAirEnthalpy = OutletAirEnthalpy
+
+DXCoolingSystem(DXCoilHPSimNum)%PartLoadFrac    = (LoadToCoolingSetPoint_HPSim/TotCap)  !RS:Debugging: Seeing if this calculates the part load fraction (3/16/19)
 
 ELSE
 

@@ -140,7 +140,7 @@ LOGICAL :: EconomizerFlag=.FALSE. ! holds air loop economizer status
 INTEGER, PUBLIC :: PTUnitHPSimNum  !RS: Debugging: Making another variable for HPSim implementation (11/3/14)
 
 ! Make this type allocatable
-TYPE (DXCoolingConditions), ALLOCATABLE, DIMENSION(:) :: DXCoolingSystem
+TYPE (DXCoolingConditions), ALLOCATABLE, PUBLIC, DIMENSION(:) :: DXCoolingSystem
 LOGICAL, ALLOCATABLE, DIMENSION(:) :: CheckEquipName
 
 ! Subroutine Specifications for the Module
@@ -2129,7 +2129,7 @@ SUBROUTINE ControlDXSystem(DXSystemNum, FirstHVACIteration, HXUnitOn)
     END IF ! End of cooling load type (sensible or latent) if block
   END IF   ! End of If DXCoolingSystem is scheduled on and there is flow
   !Set the final results
-  DXCoolingSystem(DXSystemNum)%PartLoadFrac = PartLoadFrac
+  !DXCoolingSystem(DXSystemNum)%PartLoadFrac = PartLoadFrac
   DXCoolingSystem(DXSystemNum)%SpeedRatio = SpeedRatio
   DXCoolingSystem(DXSystemNum)%CycRatio = CycRatio
   DXCoolingSystem(DXSystemNum)%DehumidificationMode = DehumidMode
